@@ -5,7 +5,7 @@
 		<file>Bowler/MediumCad.groovy</file>
 	</cadEngine>
 	<driveEngine>
-		<git>https://github.com/OperationSmallKat/greycat.git</git>
+		<git>https://github.com/NotOctogonapus/greycat.git</git>
 		<file>walking.groovy</file>
 	</driveEngine>
 
