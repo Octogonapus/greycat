@@ -2,6 +2,3 @@ def cat =ScriptingEngine.gitScriptRun(	"https://github.com/NotOctogonapus/SmallK
 								"loadRobot.groovy", 
 ["https://github.com/NotOctogonapus/greycat.git",
 		"MediumKat_black.xml","GameController_22","hidDevice"]);
-
-def move = new TransformNR(10, 0, 0, new RotationNR(0, 0, 0))
-cat.getWalkingDriveEngine().pose(move)
