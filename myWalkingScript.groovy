@@ -4,8 +4,8 @@ void homeLegs(MobileBase base) {
 	}
 }
 
-TransformNR solveForTipPositionInWorldSpace(MobileBase base, DHParameterKinematics leg, TransformNR baseDelta) {
-	def T_tipGlobal = leg.getCurrentPoseTarget()
+TransformNR solveForTipPositionInWorldSpace(MobileBase base, DHParameterKinematics leg, TransformNR originalTipInLimbSpace, TransformNR baseDelta) {
+	def T_tipGlobal = originalTipInLimbSpace
 	def T_fiducialLimb = leg.getRobotToFiducialTransform()
 	def T_globalFiducial = base.getFiducialToGlobalTransform()
 
@@ -15,11 +15,15 @@ TransformNR solveForTipPositionInWorldSpace(MobileBase base, DHParameterKinemati
 }
 
 void moveBase(MobileBase base, TransformNR baseDelta, int numberOfIncrements) {
+	def originalTipPositionsInLimbSpace = base.getLegs().collect { leg ->
+		leg.getCurrentPoseTarget()
+	}
+	
 	for (int i = 0; i <= numberOfIncrements; i++) {
 		double scale = i / numberOfIncrements
 
-		base.getLegs().each { leg ->
-			def tipTargetInWorldSpace = solveForTipPositionInWorldSpace(base, leg, baseDelta.scale(scale))
+		base.getLegs().eachWithIndex { leg, legIndex ->
+			def tipTargetInWorldSpace = solveForTipPositionInWorldSpace(base, leg, originalTipPositionsInLimbSpace[legIndex], baseDelta.scale(scale))
 			if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
 				leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace, 0)
 			}
@@ -34,10 +38,24 @@ if (base == null) {
 	throw new IllegalStateException("MediumKat device was null.");
 }
 
-def T_deltaBody = new TransformNR(0, 0, 10, new RotationNR(0, 0, 0)).inverse()
+def T_pushup = new TransformNR(0, 0, 10, new RotationNR(0, 0, 0)).inverse()
+def T_twist = new TransformNR(0, 0, 0, new RotationNR(0, 5, 0)).inverse()
 
 homeLegs(base)
-Thread.sleep(1000)
-moveBase(base, T_deltaBody, 100)
-Thread.sleep(1000)
-moveBase(base, T_deltaBody.inverse(), 100)
+Thread.sleep(500)
+
+moveBase(base, T_pushup, 100)
+Thread.sleep(500)
+moveBase(base, T_pushup.inverse(), 100)
+
+Thread.sleep(500)
+
+moveBase(base, T_twist, 100)
+Thread.sleep(500)
+moveBase(base, T_twist.inverse(), 100)
+moveBase(base, T_twist.inverse(), 100)
+Thread.sleep(500)
+moveBase(base, T_twist, 100)
+
+homeLegs(base)
+Thread.sleep(500)
