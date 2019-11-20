@@ -79,6 +79,39 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 	return profile
 }
 
+void followGroupProfile(group, profile, TransformNR globalFiducial, int startIndex) {
+	def startingTipPositions = group.collect { leg ->
+		leg.calcHome()
+	}
+
+	for (int i = 0; i < startIndex; i++) {
+		def bodyDelta = profile[i]
+		def newBody = globalFiducial.times(bodyDelta)
+		
+		for (int j = 0; j < group.size(); j++) {
+			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
+		}
+	}
+
+	interpolateAndRun(group, startingTipPositions, globalFiducial, new TransformNR(0, 0, 0, new RotationNR()), 1)
+	
+	for (int i = 0; i < profile.size(); i++) {
+		def adjustedIndex = i + startIndex
+		if (adjustedIndex >= profile.size()) {
+			adjustedIndex -= profile.size()
+		}
+		
+		def bodyDelta = profile[adjustedIndex]
+		def newBody = globalFiducial.times(bodyDelta)
+
+		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, 50)
+		
+		for (int j = 0; j < group.size(); j++) {
+			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
+		}
+	}
+}
+
 void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
 	def groupA = base.getLegs().subList(0, 2)
 	def groupB = base.getLegs().subList(2, 4)
@@ -86,27 +119,10 @@ void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
 	// TODO: Split baseDelta if it is impossible
 	def globalFiducial = base.getFiducialToGlobalTransform()
 	def profileA = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupA, stepHeight)
-	//def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
+	def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
 
-	/*if (profileB == null) {
-		throw new UnsupportedOperationException("profileB is impossible")
-		return
-	}*/
-
-	def startingTipPositions = groupA.collect { leg ->
-		leg.calcHome()
-	}
-	
-	for (int i = 0; i < profileA.size(); i++) {
-		def bodyDelta = profileA[i]
-		def newBody = globalFiducial.times(bodyDelta)
-
-		interpolateAndRun(groupA, startingTipPositions, globalFiducial, bodyDelta, 50)
-		
-		for (int j = 0; j < groupA.size(); j++) {
-			startingTipPositions[j] = solveForTipPositionInWorldSpace(groupA[j], startingTipPositions[j], newBody)
-		}
-	}
+	followGroupProfile(groupA, profileA, globalFiducial, 0)
+	followGroupProfile(groupB, profileB, globalFiducial, 3)
 }
 
 Log.enableSystemPrint(true)
