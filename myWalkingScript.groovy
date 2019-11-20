@@ -121,8 +121,12 @@ void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
 	def profileA = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupA, stepHeight)
 	def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
 
-	followGroupProfile(groupA, profileA, globalFiducial, 0)
-	followGroupProfile(groupB, profileB, globalFiducial, 3)
+	Thread.start {
+		followGroupProfile(groupA, profileA, globalFiducial, 0)
+	}
+	Thread.start {
+		followGroupProfile(groupB, profileB, globalFiducial, 3)
+	}
 }
 
 Log.enableSystemPrint(true)
