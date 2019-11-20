@@ -47,25 +47,3 @@ MobileBase base = DeviceManager.getSpecificDevice("MediumKat")
 if (base == null) {
 	throw new IllegalStateException("MediumKat device was null.");
 }
-
-def T_pushup = new TransformNR(0, 0, 10, new RotationNR(0, 0, 0)).inverse()
-def T_twist = new TransformNR(0, 0, 0, new RotationNR(0, 5, 0)).inverse()
-
-homeLegs(base)
-Thread.sleep(500)
-
-moveBaseWithLimbsPlanted(base, T_pushup, 100)
-Thread.sleep(500)
-moveBaseWithLimbsPlanted(base, T_pushup.inverse(), 100)
-
-Thread.sleep(500)
-
-moveBaseWithLimbsPlanted(base, T_twist, 100)
-Thread.sleep(500)
-moveBaseWithLimbsPlanted(base, T_twist.inverse(), 100)
-moveBaseWithLimbsPlanted(base, T_twist.inverse(), 100)
-Thread.sleep(500)
-moveBaseWithLimbsPlanted(base, T_twist, 100)
-
-homeLegs(base)
-Thread.sleep(500)
