@@ -29,7 +29,7 @@ void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, T
 			}
 		}
 
-		Thread.sleep(10)
+		Thread.sleep(5)
 	}
 }
 
@@ -104,7 +104,7 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int startInd
 		def bodyDelta = profile[adjustedIndex]
 		def newBody = globalFiducial.times(bodyDelta)
 
-		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, 50)
+		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, 10)
 		
 		for (int j = 0; j < group.size(); j++) {
 			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
@@ -121,12 +121,15 @@ void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
 	def profileA = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupA, stepHeight)
 	def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
 
-	Thread.start {
+	def threadA = Thread.start {
 		followGroupProfile(groupA, profileA, globalFiducial, 0)
 	}
-	Thread.start {
+	def threadB = Thread.start {
 		followGroupProfile(groupB, profileB, globalFiducial, 3)
 	}
+
+	threadA.join()
+	threadB.join()
 }
 
 Log.enableSystemPrint(true)
@@ -142,4 +145,6 @@ def T_twist = new TransformNR(0, 0, 0, new RotationNR(0, 5, 0)).inverse()
 homeLegs(base)
 Thread.sleep(500)
 
-walkBase(base, new TransformNR(20, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
+walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
+walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
+walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
