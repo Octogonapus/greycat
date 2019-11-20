@@ -66,16 +66,14 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 			def newTip = solveForTipPositionInWorldSpace(leg, startingTipPositions[j], newBase)
 
 			if (!leg.checkTaskSpaceTransform(newTip)) {
-				println("Unreachable: profile index " + i + ", leg index " + j)
 				println("New tip:\n" + newTip + "\n")
 				println("Body delta:\n" + profileBodyDelta + "\n")
 				println("New body:\n" + globalFiducial.times(profileBodyDelta) + "\n")
+				throw new UnsupportedOperationException("Unreachable: profile index " + i + ", leg index " + j)
 			}
 			
 			startingTipPositions[j] = newTip
 		}
-		
-		globalFiducial = newBase
 	}
 
 	return profile
