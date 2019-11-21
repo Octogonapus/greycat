@@ -140,6 +140,55 @@ void moveBaseWithLimbsPlanted(
 }
 
 /**
+ * Creates a trapezoid profile.
+ * @param baseDelta The delta to apply to the base.
+ * @param stepHeight The height of one step.
+ * @return The profile.
+ */
+List<TransformNR> createTrapezoidProfile(
+	TransformNR baseDelta,
+	double stepHeight) {
+    TransformNR quarterBaseDelta = baseDelta.scale(1 / 4.0)
+    TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1 / 4.0)
+	return [
+            quarterBaseDelta,
+            quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDelta.times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
+            quarterBaseDelta
+    ]
+}
+
+/**
+ * Creates a square-ish profile.
+ * @param baseDelta The delta to apply to the base.
+ * @param stepHeight The height of one step.
+ * @return The profile.
+ */
+List<TransformNR> createSquareProfile(
+	TransformNR baseDelta,
+	double stepHeight) {
+    TransformNR quarterBaseDelta = baseDelta.scale(1 / 4.0)
+    TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1 / 4.0)
+	return [
+            quarterBaseDelta,
+            quarterBaseDelta,
+            quarterBaseDelta,
+            // Keep the foot moving back when we pick it up
+            quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            // Put the foot straight down to the home position to avoid pushing backwards
+            new TransformNR(0, 0, -stepHeight, new RotationNR())
+    ]
+}
+
+/**
  * Creates a motion profile for a list of legs. Assumes that the legs start in the home position.
  *
  * @param globalFiducial The position of the base.
@@ -153,20 +202,7 @@ List<TransformNR> createLimbTipMotionProfile(
         TransformNR baseDelta,
         List<DHParameterKinematics> limbGroup,
         double stepHeight) {
-    TransformNR quarterBaseDelta = baseDelta.scale(1 / 4.0)
-    TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1 / 4.0)
-
-    // Create a trapezoidal profile
-    def profile = [
-            quarterBaseDelta,
-            quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDelta.times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
-            quarterBaseDelta
-    ]
+    def profile = createTrapezoidProfile(baseDelta, stepHeight)
 
     // Assume the legs start homed
     def startingTipPositions = limbGroup.collect { leg ->
@@ -348,7 +384,7 @@ void walkBase(
         TransformNR baseDelta,
         double stepHeight,
         int numberOfIncrements,
-        int timeMs) {
+        long timeMs) {
     def groupA = base.getLegs().subList(0, 2)
     def groupB = base.getLegs().subList(2, 4)
 
@@ -386,9 +422,10 @@ if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
 }
 
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
+double stepLength = 20
+double stepHeight = 10
+long timePerWalk = 2000
+walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
