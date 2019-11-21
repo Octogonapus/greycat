@@ -55,7 +55,7 @@ List<List<TransformNR>> computeInterpolation(
 	return points
 }
 
-void followTransforms(legs, points, int timeMs) {
+void followTransforms(legs, List<List<TransformNR>> points, int timeMs) {
 	int timePerIteration = timeMs / (double) points.size()
 	for (int i = 0; i < points.size(); i++) {
 		for (int j = 0; j < legs.size(); j++) {
@@ -140,13 +140,14 @@ List<TransformNR> createLimbTipMotionProfile(
 	return profile
 }
 
-void followGroupProfile(
+List<List<List<TransformNR>>> computeInterpolatedGroupProfile(
 		group,
 		profile,
 		TransformNR globalFiducial,
 		int numberOfIncrements,
-		int timeMs,
 		int startIndex) {
+	List<List<List<TransformNR>>> out = new ArrayList<>(profile.size() + 1)
+	
 	def startingTipPositions = group.collect { leg ->
 		leg.calcHome()
 	}
@@ -164,19 +165,16 @@ void followGroupProfile(
 		}
 	}
 
-	followTransforms(
-		group,
+	out.add(
 		computeInterpolation(
 			group,
 			startingTipPositions,
 			globalFiducial,
 			new TransformNR(0, 0, 0, new RotationNR()),
 			1
-		),
-		0
+		)
 	)
 
-	int timeMsPerProfileStep = timeMs / profile.size()
 	for (int i = 0; i < profile.size(); i++) {
 		def adjustedIndex = i + startIndex
 		if (adjustedIndex >= profile.size()) {
@@ -186,16 +184,14 @@ void followGroupProfile(
 		def bodyDelta = profile[adjustedIndex]
 		def newBody = globalFiducial.times(bodyDelta)
 
-		followTransforms(
-			group,
+		out.add(
 			computeInterpolation(
 				group,
 				startingTipPositions,
 				globalFiducial,
 				bodyDelta,
 				numberOfIncrements
-			),
-			timeMsPerProfileStep
+			)
 		)
 		
 		for (int j = 0; j < group.size(); j++) {
@@ -206,7 +202,31 @@ void followGroupProfile(
 			)
 		}
 	}
+
+	return out
 }
+
+void followInterpolatedGroupProfile(
+	group,
+	List<List<List<TransformNR>>> interpolatedProfile,
+	int timeMs) {
+	int timeMsPerProfileStep = timeMs / (double) (interpolatedProfile.size() - 1)
+
+	followTransforms(
+		group,
+		interpolatedProfile[0],
+		0
+	)
+
+	for (int i = 0; i < interpolatedProfile.size() - 1; i++) {
+		followTransforms(
+			group,
+			interpolatedProfile[i + 1],
+			timeMsPerProfileStep
+		)
+	}
+}
+
 
 void walkBase(
 		MobileBase base,
@@ -222,8 +242,31 @@ void walkBase(
 	def profileA = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupA, stepHeight)
 	def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
 
-	followGroupProfile(groupA, profileA, globalFiducial, numberOfIncrements, timeMs, 0)
-	followGroupProfile(groupB, profileB, globalFiducial, numberOfIncrements, timeMs, 4)
+	def interpolatedProfileA = computeInterpolatedGroupProfile(
+		groupA,
+		profileA,
+		globalFiducial,
+		numberOfIncrements,
+		0
+	)
+	def interpolatedProfileB = computeInterpolatedGroupProfile(
+		groupB,
+		profileB,
+		globalFiducial,
+		numberOfIncrements,
+		4
+	)
+
+	followInterpolatedGroupProfile(
+		groupA,
+		interpolatedProfileA,
+		timeMs
+	)
+	followInterpolatedGroupProfile(
+		groupB,
+		interpolatedProfileB,
+		timeMs
+	)
 }
 
 Log.enableSystemPrint(true)
