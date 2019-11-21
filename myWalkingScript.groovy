@@ -11,7 +11,9 @@ TransformNR solveForTipPositionInWorldSpace(DHParameterKinematics leg, Transform
 	return newBodyPose.times(T_fiducialLimb).times(tipInLimbSpace)
 }
 
-void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, TransformNR baseDelta, int numberOfIncrements) {
+void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, TransformNR baseDelta, int numberOfIncrements, int timeMs) {
+	int timePerIteration = timeMs / (double) numberOfIncrements
+	
 	for (int i = 0; i <= numberOfIncrements; i++) {
 		double scale = i / (double) numberOfIncrements
 
@@ -29,16 +31,16 @@ void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, T
 			}
 		}
 
-		Thread.sleep(5)
+		Thread.sleep(timePerIteration)
 	}
 }
 
-void moveBaseWithLimbsPlanted(MobileBase base, TransformNR baseDelta, int numberOfIncrements) {
+void moveBaseWithLimbsPlanted(MobileBase base, TransformNR baseDelta, int numberOfIncrements, int timeMs) {
 	def originalTipPositionsInLimbSpace = base.getLegs().collect { leg ->
 		leg.getCurrentPoseTarget()
 	}
 
-	interpolateAndRun(base.getLegs(), originalTipPositionsInLimbSpace, base.getFiducialToGlobalTransform(), baseDelta, numberOfIncrements)
+	interpolateAndRun(base.getLegs(), originalTipPositionsInLimbSpace, base.getFiducialToGlobalTransform(), baseDelta, numberOfIncrements, timeMs)
 }
 
 List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR globalFiducial, TransformNR baseDelta, limbGroup, double stepHeight) {
@@ -79,7 +81,7 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 	return profile
 }
 
-void followGroupProfile(group, profile, TransformNR globalFiducial, int startIndex) {
+void followGroupProfile(group, profile, TransformNR globalFiducial, int numberOfIncrements, int timeMs, int startIndex) {
 	def startingTipPositions = group.collect { leg ->
 		leg.calcHome()
 	}
@@ -93,8 +95,9 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int startInd
 		}
 	}
 
-	interpolateAndRun(group, startingTipPositions, globalFiducial, new TransformNR(0, 0, 0, new RotationNR()), 1)
-	
+	interpolateAndRun(group, startingTipPositions, globalFiducial, new TransformNR(0, 0, 0, new RotationNR()), 1, 0)
+
+	int timeMsPerProfileStep = timeMs / profile.size()
 	for (int i = 0; i < profile.size(); i++) {
 		def adjustedIndex = i + startIndex
 		if (adjustedIndex >= profile.size()) {
@@ -104,7 +107,7 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int startInd
 		def bodyDelta = profile[adjustedIndex]
 		def newBody = globalFiducial.times(bodyDelta)
 
-		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, 10)
+		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, numberOfIncrements, timeMsPerProfileStep)
 		
 		for (int j = 0; j < group.size(); j++) {
 			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
@@ -112,7 +115,7 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int startInd
 	}
 }
 
-void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
+void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight, int numberOfIncrements, int timeMs) {
 	def groupA = base.getLegs().subList(0, 2)
 	def groupB = base.getLegs().subList(2, 4)
 
@@ -121,15 +124,8 @@ void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight) {
 	def profileA = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupA, stepHeight)
 	def profileB = createLimbTipMotionProfile(base, globalFiducial, baseDelta, groupB, stepHeight)
 
-	def threadA = Thread.start {
-		followGroupProfile(groupA, profileA, globalFiducial, 0)
-	}
-	def threadB = Thread.start {
-		followGroupProfile(groupB, profileB, globalFiducial, 3)
-	}
-
-	threadA.join()
-	threadB.join()
+	followGroupProfile(groupA, profileA, globalFiducial, numberOfIncrements, timeMs, 0)
+	followGroupProfile(groupB, profileB, globalFiducial, numberOfIncrements, timeMs, 4)
 }
 
 Log.enableSystemPrint(true)
@@ -145,6 +141,4 @@ def T_twist = new TransformNR(0, 0, 0, new RotationNR(0, 5, 0)).inverse()
 homeLegs(base)
 Thread.sleep(500)
 
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
-walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10)
+walkBase(base, new TransformNR(30, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 5000)
