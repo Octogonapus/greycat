@@ -1,3 +1,16 @@
+class InterpolationIterator {
+
+	private Closure<TransformNR> computeNextTransform;
+
+	public InterpolationIterator(Closure<TransformNR> computeNextTransform) {
+		this.computeNextTransform = computeNextTransform
+	}
+
+	public TransformNR next() {
+		return computeNextTransform()
+	}
+}
+
 void homeLegs(MobileBase base) {
 	base.getLegs().each {
 		it.setDesiredTaskSpaceTransform(it.calcHome(), 0)
@@ -14,27 +27,42 @@ TransformNR solveForTipPositionInWorldSpace(
 	return newBodyPose.times(T_fiducialLimb).times(tipInLimbSpace)
 }
 
-void interpolateAndRun(
+List<List<TransformNR>> computeInterpolation(
 		legs,
 		originalTipPositions,
 		TransformNR globalFiducial,
 		TransformNR baseDelta,
-		int numberOfIncrements,
-		int timeMs) {
-	int timePerIteration = timeMs / (double) numberOfIncrements
+		int numberOfIncrements) {
+	List<List<TransformNR>> points = new ArrayList<>(numberOfIncrements)
 	
 	for (int i = 0; i <= numberOfIncrements; i++) {
 		double scale = i / (double) numberOfIncrements
+		List<TransformNR> legPoints = new ArrayList<>(legs.size())
+		
+		for (int j = 0; j < legs.size(); j++) {
+			legPoints.add(
+				solveForTipPositionInWorldSpace(
+					legs[j],
+					originalTipPositions[j],
+					globalFiducial.times(baseDelta.scale(scale))
+				)
+			)
+		}
 
+		points.add(legPoints)
+	}
+
+	return points
+}
+
+void followTransforms(legs, points, int timeMs) {
+	int timePerIteration = timeMs / (double) points.size()
+	for (int i = 0; i < points.size(); i++) {
 		for (int j = 0; j < legs.size(); j++) {
 			def leg = legs[j]
 			
-			def tipTargetInWorldSpace = solveForTipPositionInWorldSpace(
-				leg,
-				originalTipPositions[j],
-				globalFiducial.times(baseDelta.scale(scale))
-			)
-
+			def tipTargetInWorldSpace = points[i][j]
+	
 			if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
 				leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace, 0)
 			}
@@ -53,14 +81,15 @@ void moveBaseWithLimbsPlanted(
 		leg.getCurrentPoseTarget()
 	}
 
-	interpolateAndRun(
+	def points = computeInterpolation(
 		base.getLegs(),
 		originalTipPositionsInLimbSpace,
 		base.getFiducialToGlobalTransform(),
 		baseDelta,
-		numberOfIncrements,
-		timeMs
+		numberOfIncrements
 	)
+
+	followTransforms(base.getLegs(), points, timeMs)
 }
 
 List<TransformNR> createLimbTipMotionProfile(
@@ -135,12 +164,15 @@ void followGroupProfile(
 		}
 	}
 
-	interpolateAndRun(
+	followTransforms(
 		group,
-		startingTipPositions,
-		globalFiducial,
-		new TransformNR(0, 0, 0, new RotationNR()),
-		1,
+		computeInterpolation(
+			group,
+			startingTipPositions,
+			globalFiducial,
+			new TransformNR(0, 0, 0, new RotationNR()),
+			1
+		),
 		0
 	)
 
@@ -154,12 +186,15 @@ void followGroupProfile(
 		def bodyDelta = profile[adjustedIndex]
 		def newBody = globalFiducial.times(bodyDelta)
 
-		interpolateAndRun(
+		followTransforms(
 			group,
-			startingTipPositions,
-			globalFiducial,
-			bodyDelta,
-			numberOfIncrements,
+			computeInterpolation(
+				group,
+				startingTipPositions,
+				globalFiducial,
+				bodyDelta,
+				numberOfIncrements
+			),
 			timeMsPerProfileStep
 		)
 		
