@@ -4,14 +4,23 @@ void homeLegs(MobileBase base) {
 	}
 }
 
-TransformNR solveForTipPositionInWorldSpace(DHParameterKinematics leg, TransformNR originalTipInLimbSpace, TransformNR newBodyPose) {
+TransformNR solveForTipPositionInWorldSpace(
+		DHParameterKinematics leg,
+		TransformNR originalTipInLimbSpace,
+		TransformNR newBodyPose) {
 	def T_tipGlobal = originalTipInLimbSpace
 	def T_fiducialLimb = leg.getRobotToFiducialTransform()
 	def tipInLimbSpace = leg.inverseOffset(T_tipGlobal)
 	return newBodyPose.times(T_fiducialLimb).times(tipInLimbSpace)
 }
 
-void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, TransformNR baseDelta, int numberOfIncrements, int timeMs) {
+void interpolateAndRun(
+		legs,
+		originalTipPositions,
+		TransformNR globalFiducial,
+		TransformNR baseDelta,
+		int numberOfIncrements,
+		int timeMs) {
 	int timePerIteration = timeMs / (double) numberOfIncrements
 	
 	for (int i = 0; i <= numberOfIncrements; i++) {
@@ -35,24 +44,42 @@ void interpolateAndRun(legs, originalTipPositions, TransformNR globalFiducial, T
 	}
 }
 
-void moveBaseWithLimbsPlanted(MobileBase base, TransformNR baseDelta, int numberOfIncrements, int timeMs) {
+void moveBaseWithLimbsPlanted(
+		MobileBase base,
+		TransformNR baseDelta,
+		int numberOfIncrements,
+		int timeMs) {
 	def originalTipPositionsInLimbSpace = base.getLegs().collect { leg ->
 		leg.getCurrentPoseTarget()
 	}
 
-	interpolateAndRun(base.getLegs(), originalTipPositionsInLimbSpace, base.getFiducialToGlobalTransform(), baseDelta, numberOfIncrements, timeMs)
+	interpolateAndRun(
+		base.getLegs(),
+		originalTipPositionsInLimbSpace,
+		base.getFiducialToGlobalTransform(),
+		baseDelta,
+		numberOfIncrements,
+		timeMs
+	)
 }
 
-List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR globalFiducial, TransformNR baseDelta, limbGroup, double stepHeight) {
+List<TransformNR> createLimbTipMotionProfile(
+		MobileBase base,
+		TransformNR globalFiducial,
+		TransformNR baseDelta,
+		limbGroup,
+		double stepHeight) {
+	TransformNR quarterBaseDelta = baseDelta.scale(1/4.0)
+	TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1/4.0)
 	def profile = [
-		baseDelta.scale(1/4.0),
-		baseDelta.scale(1/4.0).times(new TransformNR(0, 0, stepHeight, new RotationNR())),
-		baseDelta.inverse().scale(1/4.0),
-		baseDelta.inverse().scale(1/4.0),
-		baseDelta.inverse().scale(1/4.0),
-		baseDelta.inverse().scale(1/4.0),
-		baseDelta.scale(1/4.0).times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
-		baseDelta.scale(1/4.0)
+		quarterBaseDelta,
+		quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
+		quarterBaseDeltaInverted,
+		quarterBaseDeltaInverted,
+		quarterBaseDeltaInverted,
+		quarterBaseDeltaInverted,
+		quarterBaseDelta.times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
+		quarterBaseDelta
 	]
 
 	def startingTipPositions = limbGroup.collect { leg ->
@@ -60,8 +87,8 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 	}
 
 	for (int i = 0; i < profile.size(); i++) {
-		def profileBodyDelta = profile[i]
-		def newBase = globalFiducial.times(profileBodyDelta)
+		TransformNR profileBodyDelta = profile[i]
+		TransformNR newBase = globalFiducial.times(profileBodyDelta)
 		
 		for (int j = 0; j < limbGroup.size(); j++) {
 			def leg = limbGroup[j]
@@ -71,7 +98,10 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 				println("New tip:\n" + newTip + "\n")
 				println("Body delta:\n" + profileBodyDelta + "\n")
 				println("New body:\n" + globalFiducial.times(profileBodyDelta) + "\n")
-				throw new UnsupportedOperationException("Unreachable: profile index " + i + ", leg index " + j)
+				
+				throw new UnsupportedOperationException(
+					"Unreachable: profile index " + i + ", leg index " + j
+				)
 			}
 			
 			startingTipPositions[j] = newTip
@@ -81,7 +111,13 @@ List<TransformNR> createLimbTipMotionProfile(MobileBase base, TransformNR global
 	return profile
 }
 
-void followGroupProfile(group, profile, TransformNR globalFiducial, int numberOfIncrements, int timeMs, int startIndex) {
+void followGroupProfile(
+		group,
+		profile,
+		TransformNR globalFiducial,
+		int numberOfIncrements,
+		int timeMs,
+		int startIndex) {
 	def startingTipPositions = group.collect { leg ->
 		leg.calcHome()
 	}
@@ -91,11 +127,22 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int numberOf
 		def newBody = globalFiducial.times(bodyDelta)
 		
 		for (int j = 0; j < group.size(); j++) {
-			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
+			startingTipPositions[j] = solveForTipPositionInWorldSpace(
+				group[j],
+				startingTipPositions[j],
+				newBody
+			)
 		}
 	}
 
-	interpolateAndRun(group, startingTipPositions, globalFiducial, new TransformNR(0, 0, 0, new RotationNR()), 1, 0)
+	interpolateAndRun(
+		group,
+		startingTipPositions,
+		globalFiducial,
+		new TransformNR(0, 0, 0, new RotationNR()),
+		1,
+		0
+	)
 
 	int timeMsPerProfileStep = timeMs / profile.size()
 	for (int i = 0; i < profile.size(); i++) {
@@ -107,15 +154,31 @@ void followGroupProfile(group, profile, TransformNR globalFiducial, int numberOf
 		def bodyDelta = profile[adjustedIndex]
 		def newBody = globalFiducial.times(bodyDelta)
 
-		interpolateAndRun(group, startingTipPositions, globalFiducial, bodyDelta, numberOfIncrements, timeMsPerProfileStep)
+		interpolateAndRun(
+			group,
+			startingTipPositions,
+			globalFiducial,
+			bodyDelta,
+			numberOfIncrements,
+			timeMsPerProfileStep
+		)
 		
 		for (int j = 0; j < group.size(); j++) {
-			startingTipPositions[j] = solveForTipPositionInWorldSpace(group[j], startingTipPositions[j], newBody)
+			startingTipPositions[j] = solveForTipPositionInWorldSpace(
+				group[j],
+				startingTipPositions[j],
+				newBody
+			)
 		}
 	}
 }
 
-void walkBase(MobileBase base, TransformNR baseDelta, double stepHeight, int numberOfIncrements, int timeMs) {
+void walkBase(
+		MobileBase base,
+		TransformNR baseDelta,
+		double stepHeight,
+		int numberOfIncrements,
+		int timeMs) {
 	def groupA = base.getLegs().subList(0, 2)
 	def groupB = base.getLegs().subList(2, 4)
 
