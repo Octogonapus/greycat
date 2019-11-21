@@ -423,9 +423,6 @@ if (base == null) {
 }
 
 double stepLength = 20
-double stepHeight = 10
+double stepHeight = 20
 long timePerWalk = 2000
-walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
-walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
-walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
 walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
