@@ -151,14 +151,18 @@ List<TransformNR> createTrapezoidProfile(
     TransformNR quarterBaseDelta = baseDelta.scale(1 / 4.0)
     TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1 / 4.0)
 	return [
-            quarterBaseDelta,
-            quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDeltaInverted,
-            quarterBaseDelta.times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
-            quarterBaseDelta
+            baseDelta.scale(1 / 12.0),
+            baseDelta.scale(1 / 12.0),
+            baseDelta.scale(1 / 12.0),
+            baseDelta.scale(1 / 4.0).times(new TransformNR(0, 0, stepHeight, new RotationNR())),
+            baseDelta.inverse().scale(1 / 4.0),
+            baseDelta.inverse().scale(1 / 4.0),
+            baseDelta.inverse().scale(1 / 4.0),
+            baseDelta.inverse().scale(1 / 4.0),
+            baseDelta.scale(1 / 4.0).times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
+            baseDelta.scale(1 / 12.0),
+            baseDelta.scale(1 / 12.0),
+            baseDelta.scale(1 / 12.0)
     ]
 }
 
@@ -423,7 +427,7 @@ void walkBase(
             profileB,
             globalFiducial,
             numberOfIncrements,
-            4
+            6
     )
 
     followInterpolatedGroupProfiles(
@@ -450,9 +454,9 @@ if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
 }
 
-double stepLength = -10
-double stepHeight = 20
-long timePerWalk = 200
+double stepLength = 30
+double stepHeight = 7
+long timePerWalk = 250
 for (int i = 0; i < 15; i++) {
-	walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+	walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 5, 0)).inverse(), stepHeight, 10, timePerWalk)
 }
