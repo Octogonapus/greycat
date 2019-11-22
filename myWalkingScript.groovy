@@ -369,6 +369,24 @@ void followInterpolatedGroupProfiles(
     }
 }
 
+def createGroupAndProfile(
+		group,
+		int offset,
+		TransformNR globalFiducial,
+		TransformNR baseDelta,
+		double stepHeight,
+		int numberOfIncrements) {
+	def profile = createLimbTipMotionProfile(globalFiducial, baseDelta, group, stepHeight)
+	def interpolatedProfile = computeInterpolatedGroupProfile(
+		group,
+		profile,
+		globalFiducial,
+		numberOfIncrements,
+		offset
+	)
+	return new Tuple(group, interpolatedProfile)
+}
+
 /**
  * Moves the base in world space by walking.
  *
@@ -413,6 +431,16 @@ void walkBase(
             [interpolatedProfileA, interpolatedProfileB],
             timeMs
     )
+    /*def globalFiducial = base.getFiducialToGlobalTransform()
+    def (groupA, profileA) = createGroupAndProfile([base.getLegs()[0]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
+    def (groupB, profileB) = createGroupAndProfile([base.getLegs()[1]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
+    def (groupC, profileC) = createGroupAndProfile([base.getLegs()[2]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
+    def (groupD, profileD) = createGroupAndProfile([base.getLegs()[3]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
+    followInterpolatedGroupProfiles(
+    		[groupA, groupB, groupC, groupD],
+    		[profileA, profileB, profileC, profileD],
+    		timeMs
+    )*/
 }
 
 Log.enableSystemPrint(true)
@@ -422,7 +450,9 @@ if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
 }
 
-double stepLength = 20
+double stepLength = -10
 double stepHeight = 20
-long timePerWalk = 2000
-walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+long timePerWalk = 200
+for (int i = 0; i < 15; i++) {
+	walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+}
