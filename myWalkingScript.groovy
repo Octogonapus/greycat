@@ -102,7 +102,7 @@ void followTransforms(
 
             // Only move to the tip target if it is reachable or else the IK blows up
             if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
-                leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace, 0)
+                leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR())), 0)
             }
         }
 
@@ -120,6 +120,7 @@ void followTransforms(
  */
 void moveBaseWithLimbsPlanted(
         MobileBase base,
+        TransformNR fiducialToGlobal,
         TransformNR baseDelta,
         int numberOfIncrements,
         long timeMs) {
@@ -131,7 +132,7 @@ void moveBaseWithLimbsPlanted(
             base.getLegs(),
             // Use the original tip positions so the feet don't translate in world space
             originalTipPositionsInLimbSpace,
-            base.getFiducialToGlobalTransform(),
+            fiducialToGlobal,
             baseDelta,
             numberOfIncrements
     )
@@ -403,6 +404,7 @@ def createGroupAndProfile(
  */
 void walkBase(
         MobileBase base,
+        TransformNR fiducialToGlobal,
         TransformNR baseDelta,
         double stepHeight,
         int numberOfIncrements,
@@ -411,21 +413,20 @@ void walkBase(
     def groupB = base.getLegs().subList(2, 4)
 
     // TODO: Split baseDelta if it is impossible
-    def globalFiducial = base.getFiducialToGlobalTransform()
-    def profileA = createLimbTipMotionProfile(globalFiducial, baseDelta, groupA, stepHeight)
-    def profileB = createLimbTipMotionProfile(globalFiducial, baseDelta, groupB, stepHeight)
+    def profileA = createLimbTipMotionProfile(fiducialToGlobal, baseDelta, groupA, stepHeight)
+    def profileB = createLimbTipMotionProfile(fiducialToGlobal, baseDelta, groupB, stepHeight)
 
     def interpolatedProfileA = computeInterpolatedGroupProfile(
             groupA,
             profileA,
-            globalFiducial,
+            fiducialToGlobal,
             numberOfIncrements,
             0
     )
     def interpolatedProfileB = computeInterpolatedGroupProfile(
             groupB,
             profileB,
-            globalFiducial,
+            fiducialToGlobal,
             numberOfIncrements,
             6
     )
@@ -454,9 +455,19 @@ if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
 }
 
-double stepLength = 30
+homeLegs(base)
+Thread.sleep(500)
+
+TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
+println("Starting fiducialToGlobal:\n" + fiducialToGlobal + "\n")
+
+TransformNR adjustRideHeight = new TransformNR(0, 0, 5, new RotationNR())
+//moveBaseWithLimbsPlanted(base, fiducialToGlobal, adjustRideHeight, 100, 200L)
+//fiducialToGlobal = fiducialToGlobal.times(adjustRideHeight)
+
+double stepLength = 20
 double stepHeight = 7
 long timePerWalk = 250
 for (int i = 0; i < 15; i++) {
-	walkBase(base, new TransformNR(stepLength, 0, 0, new RotationNR(0, 5, 0)).inverse(), stepHeight, 10, timePerWalk)
+	walkBase(base, fiducialToGlobal, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
 }
