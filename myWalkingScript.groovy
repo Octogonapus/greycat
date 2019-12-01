@@ -5,6 +5,20 @@ import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 import com.neuronrobotics.sdk.common.DeviceManager
 import com.neuronrobotics.sdk.common.Log
 
+public class UnreachableTransformException extends RuntimeException {
+	
+	public DHParameterKinematics limb
+	public TransformNR target
+	
+	public UnreachableTransformException(DHParameterKinematics limb, TransformNR target, String message) {
+		super(message)
+	}
+	
+	public UnreachableTransformException(DHParameterKinematics limb, TransformNR target, String message, Throwable cause) {
+		super(message, cause)
+	}
+}
+
 /**
  * Home all the legs immediately.
  *
@@ -102,6 +116,7 @@ void followTransforms(
 
             // Only move to the tip target if it is reachable or else the IK blows up
             if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
+                // TODO: Remove this offset
                 leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR())), 0)
             }
         }
@@ -231,7 +246,9 @@ List<TransformNR> createLimbTipMotionProfile(
                 println("Body delta:\n" + profileBodyDelta + "\n")
                 println("New body:\n" + globalFiducial.times(profileBodyDelta) + "\n")
 
-                throw new UnsupportedOperationException(
+                throw new UnreachableTransformException(
+                		leg,
+                		newTip,
                         "Unreachable: profile index " + i + ", leg index " + j
                 )
             }
