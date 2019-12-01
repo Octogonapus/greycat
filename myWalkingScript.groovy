@@ -14,6 +14,10 @@ public class UnreachableTransformException extends RuntimeException {
 		super(message)
 	}
 	
+	public UnreachableTransformException(DHParameterKinematics limb, TransformNR target, Throwable cause) {
+		super(cause)
+	}
+	
 	public UnreachableTransformException(DHParameterKinematics limb, TransformNR target, String message, Throwable cause) {
 		super(message, cause)
 	}
@@ -117,7 +121,11 @@ void followTransforms(
             // Only move to the tip target if it is reachable or else the IK blows up
             if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
                 // TODO: Remove this offset
-                leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR())), 0)
+                try {
+                	leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR())), 0)
+                } catch (RuntimeException ex) {
+                	throw new UnreachableTransformException(leg, tipTargetInWorldSpace, ex)
+                }
             }
         }
 
@@ -429,41 +437,49 @@ void walkBase(
         long timeMs) {
     def groupA = base.getLegs().subList(0, 2)
     def groupB = base.getLegs().subList(2, 4)
+    
+    TransformNR nextBaseDelta = baseDelta
+    double nextBaseDeltaScale = 1.0
+    double percentOfBaseDeltaCompleted = 0.0
 
-    // TODO: Split baseDelta if it is impossible
-    def profileA = createLimbTipMotionProfile(fiducialToGlobal, baseDelta, groupA, stepHeight)
-    def profileB = createLimbTipMotionProfile(fiducialToGlobal, baseDelta, groupB, stepHeight)
-
-    def interpolatedProfileA = computeInterpolatedGroupProfile(
-            groupA,
-            profileA,
-            fiducialToGlobal,
-            numberOfIncrements,
-            0
-    )
-    def interpolatedProfileB = computeInterpolatedGroupProfile(
-            groupB,
-            profileB,
-            fiducialToGlobal,
-            numberOfIncrements,
-            6
-    )
-
-    followInterpolatedGroupProfiles(
-            [groupA, groupB],
-            [interpolatedProfileA, interpolatedProfileB],
-            timeMs
-    )
-    /*def globalFiducial = base.getFiducialToGlobalTransform()
-    def (groupA, profileA) = createGroupAndProfile([base.getLegs()[0]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
-    def (groupB, profileB) = createGroupAndProfile([base.getLegs()[1]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
-    def (groupC, profileC) = createGroupAndProfile([base.getLegs()[2]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
-    def (groupD, profileD) = createGroupAndProfile([base.getLegs()[3]], 0, globalFiducial, baseDelta, stepHeight, numberOfIncrements)
-    followInterpolatedGroupProfiles(
-    		[groupA, groupB, groupC, groupD],
-    		[profileA, profileB, profileC, profileD],
-    		timeMs
-    )*/
+	while (percentOfBaseDeltaCompleted < 1.0) {
+		try {
+			def profileA = createLimbTipMotionProfile(fiducialToGlobal, nextBaseDelta, groupA, stepHeight)
+			def profileB = createLimbTipMotionProfile(fiducialToGlobal, nextBaseDelta, groupB, stepHeight)
+			
+			def interpolatedProfileA = computeInterpolatedGroupProfile(
+				groupA,
+				profileA,
+				fiducialToGlobal,
+				numberOfIncrements,
+				0
+			)
+			def interpolatedProfileB = computeInterpolatedGroupProfile(
+				groupB,
+				profileB,
+				fiducialToGlobal,
+				numberOfIncrements,
+				6
+			)
+			
+			followInterpolatedGroupProfiles(
+				[groupA, groupB],
+				[interpolatedProfileA, interpolatedProfileB],
+				timeMs
+			)
+			
+			percentOfBaseDeltaCompleted += nextBaseDeltaScale
+		} catch (UnreachableTransformException ex) {
+			nextBaseDeltaScale *= 0.75
+			if (percentOfBaseDeltaCompleted + nextBaseDeltaScale < 1.0) {
+				// The next delta will not move further than the original delta, so we can follow it
+				nextBaseDelta = baseDelta.scale(nextBaseDeltaScale)
+			} else {
+				// The next delta will move farther than the original delta, so we only need to follow the remaining distance
+				nextBaseDelta = baseDelta.scale(1.0 - percentOfBaseDeltaCompleted)
+			}
+		}
+	}
 }
 
 Log.enableSystemPrint(true)
@@ -483,9 +499,9 @@ TransformNR adjustRideHeight = new TransformNR(0, 0, 5, new RotationNR())
 //moveBaseWithLimbsPlanted(base, fiducialToGlobal, adjustRideHeight, 100, 200L)
 //fiducialToGlobal = fiducialToGlobal.times(adjustRideHeight)
 
-double stepLength = 20
-double stepHeight = 7
-long timePerWalk = 250
-for (int i = 0; i < 15; i++) {
+double stepLength = 30
+double stepHeight = 15
+long timePerWalk = 2050
+for (int i = 0; i < 1; i++) {
 	walkBase(base, fiducialToGlobal, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
 }
