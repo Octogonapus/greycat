@@ -117,15 +117,15 @@ void followTransforms(
         for (int j = 0; j < legs.size(); j++) {
             def leg = legs[j]
             def tipTargetInWorldSpace = tipPositions[j]
+            
+            // TODO: Remove this offset
+            def foo = tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR()))
 
             // Only move to the tip target if it is reachable or else the IK blows up
-            if (leg.checkTaskSpaceTransform(tipTargetInWorldSpace)) {
-                // TODO: Remove this offset
-                try {
-                	leg.setDesiredTaskSpaceTransform(tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR())), 0)
-                } catch (RuntimeException ex) {
-                	throw new UnreachableTransformException(leg, tipTargetInWorldSpace, ex)
-                }
+            if (leg.checkTaskSpaceTransform(foo)) {
+                leg.setDesiredTaskSpaceTransform(foo, 0)
+            } else {
+            	print("Skipped transform in followTransforms. point=" + i + ", leg=" + j + "\n")
             }
         }
 
@@ -471,6 +471,7 @@ void walkBase(
 			percentOfBaseDeltaCompleted += nextBaseDeltaScale
 		} catch (UnreachableTransformException ex) {
 			nextBaseDeltaScale *= 0.75
+			print("New scale: " + nextBaseDeltaScale + "\n")
 			if (percentOfBaseDeltaCompleted + nextBaseDeltaScale < 1.0) {
 				// The next delta will not move further than the original delta, so we can follow it
 				nextBaseDelta = baseDelta.scale(nextBaseDeltaScale)
@@ -499,7 +500,7 @@ TransformNR adjustRideHeight = new TransformNR(0, 0, 5, new RotationNR())
 //moveBaseWithLimbsPlanted(base, fiducialToGlobal, adjustRideHeight, 100, 200L)
 //fiducialToGlobal = fiducialToGlobal.times(adjustRideHeight)
 
-double stepLength = 30
+double stepLength = 50
 double stepHeight = 15
 long timePerWalk = 2050
 for (int i = 0; i < 1; i++) {
