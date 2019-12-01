@@ -151,19 +151,20 @@ List<TransformNR> createTrapezoidProfile(
 	double stepHeight) {
     TransformNR quarterBaseDelta = baseDelta.scale(1 / 4.0)
     TransformNR quarterBaseDeltaInverted = baseDelta.inverse().scale(1 / 4.0)
+    TransformNR twelfthBaseDelta = baseDelta.scale(1 / 12.0)
 	return [
-            baseDelta.scale(1 / 12.0),
-            baseDelta.scale(1 / 12.0),
-            baseDelta.scale(1 / 12.0),
-            baseDelta.scale(1 / 4.0).times(new TransformNR(0, 0, stepHeight, new RotationNR())),
-            baseDelta.inverse().scale(1 / 4.0),
-            baseDelta.inverse().scale(1 / 4.0),
-            baseDelta.inverse().scale(1 / 4.0),
-            baseDelta.inverse().scale(1 / 4.0),
-            baseDelta.scale(1 / 4.0).times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
-            baseDelta.scale(1 / 12.0),
-            baseDelta.scale(1 / 12.0),
-            baseDelta.scale(1 / 12.0)
+            twelfthBaseDelta,
+            twelfthBaseDelta,
+            twelfthBaseDelta,
+            quarterBaseDelta.times(new TransformNR(0, 0, stepHeight, new RotationNR())),
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDeltaInverted,
+            quarterBaseDelta.times(new TransformNR(0, 0, -stepHeight, new RotationNR())),
+            twelfthBaseDelta,
+            twelfthBaseDelta,
+            twelfthBaseDelta
     ]
 }
 
