@@ -14,6 +14,7 @@ class PhysicsManagerExample{
 
 	boolean connected=false;
 	double timeBase = 300
+	long lastTimeTailCompletedSpin = 0
 	long startTime=0;
 	double maxOffset=40
 	ArrayList<DHParameterKinematics> feetTouchingGround
@@ -35,16 +36,21 @@ class PhysicsManagerExample{
 			double tilt = imuDataValues[10]
 			double SinComponent=0
 			double CosComponent=0
-			double tailRotationGain = 0.01
+			double tailRotationGain = 1.0/90.0
 			
 			if(Math.abs(tilt)>3){
 				// compute the values for the tail here
 				println("tilt="+tilt)
-				double dt = System.currentTimeMillis() - timeOfLaseSend
-				SinComponent = Math.sin(dt * 2 * Math.PI) * tilt * tailRotationGain
-				CosComponent = Math.cos(dt * 2 * Math.PI) * tilt * tailRotationGain
+				double dt = System.currentTimeMillis() - lastTimeTailCompletedSpin
+				double scaledTimeComponent = (dt / timeBase) * 2 * Math.PI
+				SinComponent = Math.sin(scaledTimeComponent) * tilt * tailRotationGain
+				CosComponent = Math.cos(scaledTimeComponent) * tilt * tailRotationGain
 				println("SinComponent="+SinComponent)
 				println("CosComponent="+CosComponent)
+
+				if (dt >= timeBase) {
+					lastTimeTailCompletedSpin = System.currentTimeMillis()
+				}
 			}
 			if((System.currentTimeMillis()>timeOfLaseSend+20) &&poseUpdate ) {
 				timeOfLaseSend=System.currentTimeMillis()
