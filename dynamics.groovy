@@ -18,6 +18,7 @@ class PhysicsManagerExample{
 	double maxOffset=40
 	ArrayList<DHParameterKinematics> feetTouchingGround
 	boolean poseUpdate=false
+	double timeOfLaseSend=0
 	Runnable event = {
 		println("physics event")
 		try {
@@ -34,10 +35,11 @@ class PhysicsManagerExample{
 			double tilt = imuDataValues[10]
 			double SinComponent=0
 			double CosComponent=0
-			double tailRotationGain = 1
+			double tailRotationGain = 0.01
 			
 			if(Math.abs(tilt)>3){
 				// compute the values for the tail here
+				println("tilt="+tilt)
 				double dt = System.currentTimeMillis() - timeOfLaseSend
 				SinComponent = Math.sin(dt * 2 * Math.PI) * tilt * tailRotationGain
 				CosComponent = Math.cos(dt * 2 * Math.PI) * tilt * tailRotationGain
