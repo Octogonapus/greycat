@@ -3,7 +3,7 @@ import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
 
 class PhysicsManagerExample{
-	def dev = DeviceManager.getSpecificDevice("kevkat")
+	def dev = DeviceManager.getSpecificDevice("hidDevice")
 	MobileBase cat = DeviceManager.getSpecificDevice("MediumKat")
 	DHParameterKinematics head = null
 	DHParameterKinematics tail = null
@@ -19,6 +19,7 @@ class PhysicsManagerExample{
 	ArrayList<DHParameterKinematics> feetTouchingGround
 	boolean poseUpdate=false
 	Runnable event = {
+		println("physics event")
 		try {
 			if(head==null || tail==null){
 				for(DHParameterKinematics l:cat.getAllDHChains()) {
@@ -33,9 +34,15 @@ class PhysicsManagerExample{
 			double tilt = imuDataValues[10]
 			double SinComponent=0
 			double CosComponent=0
+			double tailRotationGain = 1
 			
 			if(Math.abs(tilt)>3){
 				// compute the values for the tail here
+				double dt = System.currentTimeMillis() - timeOfLaseSend
+				SinComponent = Math.sin(dt * 2 * Math.PI) * tilt * tailRotationGain
+				CosComponent = Math.cos(dt * 2 * Math.PI) * tilt * tailRotationGain
+				println("SinComponent="+SinComponent)
+				println("CosComponent="+CosComponent)
 			}
 			if((System.currentTimeMillis()>timeOfLaseSend+20) &&poseUpdate ) {
 				timeOfLaseSend=System.currentTimeMillis()
@@ -97,8 +104,10 @@ class PhysicsManagerExample{
 	     poseUpdate=true
 	}
 	public boolean connect() {
-		if(connected)
+		if(connected) {
+			println("PhysicsManager already connected")
 			return
+		}
 		println "PhysicsManager Connecting "
 		connected=true
 		dev.simple.addEvent(1804, event);
