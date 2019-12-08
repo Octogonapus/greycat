@@ -43,6 +43,9 @@ class PhysicsManagerExample{
 				println("tilt="+tilt)
 				double dt = System.currentTimeMillis() - lastTimeTailCompletedSpin
 				double scaledTimeComponent = (dt / timeBase) * 2 * Math.PI
+				if (tilt > 0) {
+					scaledTimeComponent *= -1
+				}
 				SinComponent = Math.sin(scaledTimeComponent) * tilt * tailRotationGain
 				CosComponent = Math.cos(scaledTimeComponent) * tilt * tailRotationGain
 				println("SinComponent="+SinComponent)
