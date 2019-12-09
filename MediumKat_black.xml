@@ -51,8 +51,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0128</mass>
+	<centerOfMassFromCentroid>	<x>0.04648128342</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -105,8 +105,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0374</mass>
+	<centerOfMassFromCentroid>	<x>0.031875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -159,8 +159,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0038</mass>
+	<centerOfMassFromCentroid>	<x>0.03031578947</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -246,8 +246,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0128</mass>
+	<centerOfMassFromCentroid>	<x>0.04648128342</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -300,8 +300,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0374</mass>
+	<centerOfMassFromCentroid>	<x>0.031875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -354,8 +354,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0038</mass>
+	<centerOfMassFromCentroid>	<x>0.03031578947</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -441,8 +441,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0128</mass>
+	<centerOfMassFromCentroid>	<x>0.04648128342</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -495,8 +495,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0374</mass>
+	<centerOfMassFromCentroid>	<x>0.031875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -549,8 +549,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0038</mass>
+	<centerOfMassFromCentroid>	<x>0.03031578947</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -636,8 +636,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0128</mass>
+	<centerOfMassFromCentroid>	<x>0.04648128342</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -690,8 +690,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0374</mass>
+	<centerOfMassFromCentroid>	<x>0.031875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -744,8 +744,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0038</mass>
+	<centerOfMassFromCentroid>	<x>0.03031578947</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -885,8 +885,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.059</mass>
+	<centerOfMassFromCentroid>	<x>0.03118644068</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -972,8 +972,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0274</mass>
+	<centerOfMassFromCentroid>	<x>0.03470437956</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -1026,8 +1026,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>0.0</x>
+	<mass>0.0287</mass>
+	<centerOfMassFromCentroid>	<x>0.08008013937</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -1092,10 +1092,10 @@
 	<roty>-0.0</roty>
 	<rotz>-0.0</rotz>
 </baseToZframe>
-	<mass>0.01</mass>
-	<centerOfMassFromCentroid>	<x>-50.0</x>
+	<mass>0.0128</mass>
+	<centerOfMassFromCentroid>	<x>0.05215767635</x>
 	<y>0.0</y>
-	<z>110.0</z>
+	<z>0.0</z>
 	<rotw>1.0</rotw>
 	<rotx>0.0</rotx>
 	<roty>0.0</roty>
