@@ -73,7 +73,7 @@ class PhysicsManagerExample{
 			)
 			TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
 			TransformNR T_tilt = T_beta.inverse().times(
-				new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR())
+				new TransformNR(downGroupTipsInWorldSpace[1].getX(), downGroupTipsInWorldSpace[1].getY(), 0, new RotationNR())
 			)
 			
 			double xComp = 0.0
@@ -142,6 +142,13 @@ class PhysicsManagerExample{
 						new RotationNR()
 					)
 				)
+
+				robotCoM = T_CoMrobot.copy()
+				//robotCoM.setZ(0)
+				//Platform.runLater({
+				//	TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
+				//})
+				//Thread.sleep(500)
 				
 				if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
 					//println("Saved new best CoM at tail angle " + i)
@@ -150,7 +157,7 @@ class PhysicsManagerExample{
 				}
 			}
 
-			robotCoM = bestCoM.copy()
+			//robotCoM = bestCoM.copy()
 			robotCoM.setZ(0)
 			
 			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
@@ -168,7 +175,7 @@ class PhysicsManagerExample{
 			}
 			if(head!=null && tail!=null){
 				//println "Values:"+balenceAngle
-				boundSet(head,1,-balenceAngle)
+				//boundSet(head,1,-balenceAngle)
 				double[] vect =tail.getCurrentJointSpaceVector()
 				vect[0]=bound(tail,0,-CosComponent*maxOffset)
 				vect[1]=bound(tail,1,balenceAngle+(SinComponent*maxOffset))
