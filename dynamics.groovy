@@ -144,7 +144,7 @@ class PhysicsManagerExample{
 				)
 
 				robotCoM = T_CoMrobot.copy()
-				//robotCoM.setZ(0)
+				robotCoM.setZ(0)
 				//Platform.runLater({
 				//	TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
 				//})
@@ -158,7 +158,7 @@ class PhysicsManagerExample{
 			}
 
 			//robotCoM = bestCoM.copy()
-			robotCoM.setZ(0)
+			//robotCoM.setZ(0)
 			
 			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
 				timeOfLaseSend=System.currentTimeMillis()

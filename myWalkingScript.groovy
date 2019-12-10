@@ -493,14 +493,5 @@ if (base == null) {
 homeLegs(base)
 Thread.sleep(500)
 
-TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
-println("Starting fiducialToGlobal:\n" + fiducialToGlobal + "\n")
-
-TransformNR adjustRideHeight = new TransformNR(0, 0, 5, new RotationNR())
-//moveBaseWithLimbsPlanted(base, fiducialToGlobal, adjustRideHeight, 100, 200L)
-//fiducialToGlobal = fiducialToGlobal.times(adjustRideHeight)
-
-double stepLength = 500
-double stepHeight = 10
-long timePerWalk = 600
-walkBase(base, fiducialToGlobal, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
+walkBase(base, fiducialToGlobal, new TransformNR(500, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 1000)
+walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 100, 0)).inverse(), 8, 10, 500)
