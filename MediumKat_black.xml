@@ -1092,7 +1092,7 @@
 	<roty>-0.0</roty>
 	<rotz>-0.0</rotz>
 </baseToZframe>
-	<mass>0.0128</mass>
+	<mass>0.3856</mass>
 	<centerOfMassFromCentroid>	<x>52.15767635</x>
 	<y>0.0</y>
 	<z>115.0</z>

@@ -1,6 +1,7 @@
 import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import javafx.application.Platform
 
 class PhysicsManagerExample{
 	def dev = DeviceManager.getSpecificDevice("hidDevice")
@@ -13,6 +14,8 @@ class PhysicsManagerExample{
 	double balenceAngle=0
      def groupA = cat.getLegs().subList(0, 2)
      def groupB = cat.getLegs().subList(2, 4)
+     CSG frontFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.GREEN)
+     CSG backFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.RED)
 
 	boolean connected=false;
 	double timeBase = 300
@@ -56,12 +59,15 @@ class PhysicsManagerExample{
 				CosComponent = 0
 
 				List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
+				
 				double beta = Math.atan2(
-					downGroupTipsInWorldSpace[1].getY() - downGroupTipsInWorldSpace[0].getY(),
-					downGroupTipsInWorldSpace[1].getX() - downGroupTipsInWorldSpace[0].getX()
+					downGroupTipsInWorldSpace[1].getX() - downGroupTipsInWorldSpace[0].getX(),
+					downGroupTipsInWorldSpace[1].getY() - downGroupTipsInWorldSpace[0].getY()
 				)
 				TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
-				TransformNR T_tilt = T_beta.inverse().times(new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR()))
+				TransformNR T_tilt = T_beta.inverse().times(
+					new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR())
+				)
 				
 				double xComp = 0.0
 				double yComp = 0.0
@@ -90,6 +96,13 @@ class PhysicsManagerExample{
 				yComp += CoMhead0.getY()
 				zComp += CoMhead0.getZ()
 				totalMass += linkMass(head, 0)
+
+				TransformNR CoMbody = new TransformNR(52.15767635, 0, 115, new RotationNR())
+				double bodyMass = 0.3856
+				xComp += CoMbody.getX() * bodyMass
+				yComp += CoMbody.getY() * bodyMass
+				zComp += CoMbody.getZ() * bodyMass
+				totalMass += bodyMass
 				
 				TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
 
@@ -109,9 +122,19 @@ class PhysicsManagerExample{
 					lastTimeTailCompletedSpin = System.currentTimeMillis()
 				}
 			}
-			if((System.currentTimeMillis()>timeOfLaseSend+20) &&poseUpdate ) {
+			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
 				timeOfLaseSend=System.currentTimeMillis()
 				// update the pose values for the robot
+				List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
+				println(downGroupTipsInWorldSpace.size())
+				try {
+					Platform.runLater({
+					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[0], frontFoot.getManipulator())
+					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[1], backFoot.getManipulator())
+				})
+				}catch(Throwable ex) {
+					ex.printStackTrace()
+				}
 			}
 			if(head!=null && tail!=null){
 				//println "Values:"+balenceAngle
@@ -139,16 +162,11 @@ class PhysicsManagerExample{
 			}
 		}
 
-		def downGroup = groupA
-		if (!groupAIsDown) {
-			downGroup = groupB
+		if (groupAIsDown) {
+			return [groupA[1].getCurrentPoseTarget(), groupA[0].getCurrentPoseTarget()]
+		} else {
+			return [groupB[0].getCurrentPoseTarget(), groupB[1].getCurrentPoseTarget()]
 		}
-		
-		List<TransformNR> out = new ArrayList<TransformNR>()
-		for (int i = 0; i < downGroup.size(); i++) {
-			out.add(downGroup[i].getCurrentPoseTarget())
-		}
-		return out
 	}
 	
 	private TransformNR linkCoM(DHParameterKinematics limb, double balenceLinkAngle ,int linkIndex) {
@@ -199,12 +217,15 @@ class PhysicsManagerExample{
 		println "PhysicsManager Connecting "
 		connected=true
 		dev.simple.addEvent(1804, event);
+		BowlerStudioController.addCsg(frontFoot)
+		BowlerStudioController.addCsg(backFoot)
 		return true
 	}
 	public void disconnect() {
 		println "\r\nDisconnecting the PhysicsManager"
 		dev.simple.removeEvent(1804,event);
-	
+		BowlerStudioController.clearCSG()
+		BowlerStudioController.setCsg(MobileBaseCadManager.get(cat), null)
 	}
 }
 
