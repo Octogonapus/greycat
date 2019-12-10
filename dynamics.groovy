@@ -65,16 +65,40 @@ class PhysicsManagerExample{
 				double yComp = 0.0
 				double zComp = 0.0
 				double totalMass = 0.0
-				// TODO: For each link, sum the CoM * mass
+				for (int legIndex = 0; legIndex < cat.getLegs().size(); legIndex++) {
+					def leg = cat.getLegs()[legIndex]
+					for (int linkIndex = 0; linkIndex < leg.getChain().size(); linkIndex++) {
+						def CoM = linkCoM(leg, linkIndex)
+						def mass = linkMass(leg, linkIndex)
+						xComp += CoM.getX() * mass
+						yComp += CoM.getY() * mass
+						zComp += CoM.getZ() * mass
+						totalMass += mass
+					}
+				}
+				
+				TransformNR CoMtail0 = linkCoM(tail, 0)
+				xComp += CoMtail0.getX()
+				yComp += CoMtail0.getY()
+				zComp += CoMtail0.getZ()
+				totalMass += linkMass(tail, 0)
+
+				TransformNR CoMhead0 = linkCoM(head, 0)
+				xComp += CoMhead0.getX()
+				yComp += CoMhead0.getY()
+				zComp += CoMhead0.getZ()
+				totalMass += linkMass(head, 0)
+				
 				TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
 
 				def tailYawLink = d.getAbstractLink(1)
+				TransformNR bestCoM = new TransformNR(1e+10, 1e+10, 1e+10, new RotationNR())
 				for (int i = tailYawLink.getMinEngineeringUnits(); i < tailYawLink.getMaxEngineeringUnits(); i++) {
-					// TODO: Compute tail CoM
-					TransformNR T_tail = new TransformNR(0, 0, 0, new RotationNR())
+					TransformNR T_tail = linkCoM(tail, i, 1)
 					TransformNR T_CoMrobot = T_tilt.times(T_CoMlegs).times(T_tail)
-					if (Math.abs(T_CoMrobot.getY()) < 5) {
+					if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
 						balenceAngle = i
+						bestCoM = T_CoMrobot
 					}
 				}
 
@@ -140,8 +164,8 @@ class PhysicsManagerExample{
 	private TransformNR linkCoM(DHParameterKinematics limb ,int linkIndex) {
 		return linkCoM(limb,limb.getCurrentJointSpaceVector()[linkIndex],linkIndex)
 	}
-	private double linkMass(DHParameterKinematics limb) {
-		return limb.getLinkConfiguration(1).getMassKg()
+	private double linkMass(DHParameterKinematics limb, int linkIndex) {
+		return limb.getLinkConfiguration(linkIndex).getMassKg()
 	}
 	void boundSet(DHParameterKinematics d, int index,double value) {
 		value=bound(d,index,value)
