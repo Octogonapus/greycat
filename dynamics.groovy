@@ -149,7 +149,6 @@ class PhysicsManagerExample{
 					bestCoM = T_CoMrobot
 				}
 			}
-			//balenceAngle = 0
 
 			robotCoM = bestCoM.copy()
 			robotCoM.setZ(0)
