@@ -52,7 +52,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0128</mass>
-	<centerOfMassFromCentroid>	<x>46.48128342</x>
+	<centerOfMassFromCentroid>	<x>-46.481</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -106,7 +106,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0374</mass>
-	<centerOfMassFromCentroid>	<x>31.875</x>
+	<centerOfMassFromCentroid>	<x>-31.875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -247,7 +247,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0128</mass>
-	<centerOfMassFromCentroid>	<x>46.48128342</x>
+	<centerOfMassFromCentroid>	<x>-46.481</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -301,7 +301,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0374</mass>
-	<centerOfMassFromCentroid>	<x>31.875</x>
+	<centerOfMassFromCentroid>	<x>-31.875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -442,7 +442,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0128</mass>
-	<centerOfMassFromCentroid>	<x>46.48128342</x>
+	<centerOfMassFromCentroid>	<x>-46.481</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -496,7 +496,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0374</mass>
-	<centerOfMassFromCentroid>	<x>31.875</x>
+	<centerOfMassFromCentroid>	<x>-31.875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -549,8 +549,8 @@
 
 	</vitamins>
 	<passive>false</passive>
-	<mass>0.0038</mass>
-	<centerOfMassFromCentroid>	<x>30.31578947</x>
+	<mass>0.004</mass>
+	<centerOfMassFromCentroid>	<x>30.316</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -637,7 +637,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0128</mass>
-	<centerOfMassFromCentroid>	<x>46.48128342</x>
+	<centerOfMassFromCentroid>	<x>-46.481</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -691,7 +691,7 @@
 	</vitamins>
 	<passive>false</passive>
 	<mass>0.0374</mass>
-	<centerOfMassFromCentroid>	<x>31.875</x>
+	<centerOfMassFromCentroid>	<x>-31.875</x>
 	<y>0.0</y>
 	<z>0.0</z>
 	<rotw>1.0</rotw>
@@ -1092,7 +1092,7 @@
 	<roty>-0.0</roty>
 	<rotz>-0.0</rotz>
 </baseToZframe>
-	<mass>0.3856</mass>
+	<mass>0.0128</mass>
 	<centerOfMassFromCentroid>	<x>52.15767635</x>
 	<y>0.0</y>
 	<z>115.0</z>

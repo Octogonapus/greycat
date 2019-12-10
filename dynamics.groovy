@@ -11,8 +11,8 @@ class PhysicsManagerExample{
 
 	// Object variables
 	double balenceAngle=0
-     def groupA = base.getLegs().subList(0, 2)
-     def groupB = base.getLegs().subList(2, 4)
+     def groupA = cat.getLegs().subList(0, 2)
+     def groupB = cat.getLegs().subList(2, 4)
 
 	boolean connected=false;
 	double timeBase = 300
@@ -52,6 +52,8 @@ class PhysicsManagerExample{
 				CosComponent = Math.cos(scaledTimeComponent) * tilt * tailRotationGain
 				println("SinComponent="+SinComponent)
 				println("CosComponent="+CosComponent)
+				SinComponent = 0
+				CosComponent = 0
 
 				List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
 				double beta = Math.atan2(
@@ -60,14 +62,14 @@ class PhysicsManagerExample{
 				)
 				TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
 				TransformNR T_tilt = T_beta.inverse().times(new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR()))
-
+				
 				double xComp = 0.0
 				double yComp = 0.0
 				double zComp = 0.0
 				double totalMass = 0.0
 				for (int legIndex = 0; legIndex < cat.getLegs().size(); legIndex++) {
 					def leg = cat.getLegs()[legIndex]
-					for (int linkIndex = 0; linkIndex < leg.getChain().size(); linkIndex++) {
+					for (int linkIndex = 0; linkIndex < leg.getChain().getLinks().size(); linkIndex++) {
 						def CoM = linkCoM(leg, linkIndex)
 						def mass = linkMass(leg, linkIndex)
 						xComp += CoM.getX() * mass
@@ -91,12 +93,13 @@ class PhysicsManagerExample{
 				
 				TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
 
-				def tailYawLink = d.getAbstractLink(1)
+				def tailYawLink = tail.getAbstractLink(1)
 				TransformNR bestCoM = new TransformNR(1e+10, 1e+10, 1e+10, new RotationNR())
 				for (int i = tailYawLink.getMinEngineeringUnits(); i < tailYawLink.getMaxEngineeringUnits(); i++) {
 					TransformNR T_tail = linkCoM(tail, i, 1)
 					TransformNR T_CoMrobot = T_tilt.times(T_CoMlegs).times(T_tail)
 					if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
+						println("Saved new best CoM at tail angle " + i)
 						balenceAngle = i
 						bestCoM = T_CoMrobot
 					}
