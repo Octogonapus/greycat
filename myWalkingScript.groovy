@@ -502,7 +502,7 @@ TransformNR adjustRideHeight = new TransformNR(0, 0, 5, new RotationNR())
 
 double stepLength = 50
 double stepHeight = 15
-long timePerWalk = 250
+long timePerWalk = 500
 for (int i = 0; i < 10; i++) {
 	walkBase(base, fiducialToGlobal, new TransformNR(stepLength, 0, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, timePerWalk)
 }

@@ -16,6 +16,8 @@ class PhysicsManagerExample{
      def groupB = cat.getLegs().subList(2, 4)
      CSG frontFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.GREEN)
      CSG backFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.RED)
+     CSG CoMcube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
+     TransformNR robotCoM = new TransformNR()
 
 	boolean connected=false;
 	double timeBase = 300
@@ -53,84 +55,107 @@ class PhysicsManagerExample{
 				}
 				SinComponent = Math.sin(scaledTimeComponent) * tilt * tailRotationGain
 				CosComponent = Math.cos(scaledTimeComponent) * tilt * tailRotationGain
-				println("SinComponent="+SinComponent)
-				println("CosComponent="+CosComponent)
+				//println("SinComponent="+SinComponent)
+				//println("CosComponent="+CosComponent)
 				SinComponent = 0
 				CosComponent = 0
-
-				List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
-				
-				double beta = Math.atan2(
-					downGroupTipsInWorldSpace[1].getX() - downGroupTipsInWorldSpace[0].getX(),
-					downGroupTipsInWorldSpace[1].getY() - downGroupTipsInWorldSpace[0].getY()
-				)
-				TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
-				TransformNR T_tilt = T_beta.inverse().times(
-					new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR())
-				)
-				
-				double xComp = 0.0
-				double yComp = 0.0
-				double zComp = 0.0
-				double totalMass = 0.0
-				for (int legIndex = 0; legIndex < cat.getLegs().size(); legIndex++) {
-					def leg = cat.getLegs()[legIndex]
-					for (int linkIndex = 0; linkIndex < leg.getChain().getLinks().size(); linkIndex++) {
-						def CoM = linkCoM(leg, linkIndex)
-						def mass = linkMass(leg, linkIndex)
-						xComp += CoM.getX() * mass
-						yComp += CoM.getY() * mass
-						zComp += CoM.getZ() * mass
-						totalMass += mass
-					}
-				}
-				
-				TransformNR CoMtail0 = linkCoM(tail, 0)
-				xComp += CoMtail0.getX()
-				yComp += CoMtail0.getY()
-				zComp += CoMtail0.getZ()
-				totalMass += linkMass(tail, 0)
-
-				TransformNR CoMhead0 = linkCoM(head, 0)
-				xComp += CoMhead0.getX()
-				yComp += CoMhead0.getY()
-				zComp += CoMhead0.getZ()
-				totalMass += linkMass(head, 0)
-
-				TransformNR CoMbody = new TransformNR(52.15767635, 0, 115, new RotationNR())
-				double bodyMass = 0.3856
-				xComp += CoMbody.getX() * bodyMass
-				yComp += CoMbody.getY() * bodyMass
-				zComp += CoMbody.getZ() * bodyMass
-				totalMass += bodyMass
-				
-				TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
-
-				def tailYawLink = tail.getAbstractLink(1)
-				TransformNR bestCoM = new TransformNR(1e+10, 1e+10, 1e+10, new RotationNR())
-				for (int i = tailYawLink.getMinEngineeringUnits(); i < tailYawLink.getMaxEngineeringUnits(); i++) {
-					TransformNR T_tail = linkCoM(tail, i, 1)
-					TransformNR T_CoMrobot = T_tilt.times(T_CoMlegs).times(T_tail)
-					if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
-						println("Saved new best CoM at tail angle " + i)
-						balenceAngle = i
-						bestCoM = T_CoMrobot
-					}
-				}
 
 				if (dt >= timeBase) {
 					lastTimeTailCompletedSpin = System.currentTimeMillis()
 				}
 			}
+
+			List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
+			
+			double beta = Math.atan2(
+				downGroupTipsInWorldSpace[0].getX() - downGroupTipsInWorldSpace[1].getX(),
+				downGroupTipsInWorldSpace[0].getY() - downGroupTipsInWorldSpace[1].getY()
+			)
+			TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
+			TransformNR T_tilt = T_beta.inverse().times(
+				new TransformNR(downGroupTipsInWorldSpace[0].getX(), downGroupTipsInWorldSpace[0].getY(), 0, new RotationNR())
+			)
+			
+			double xComp = 0.0
+			double yComp = 0.0
+			double zComp = 0.0
+			double totalMass = 0.0
+			for (int legIndex = 0; legIndex < cat.getLegs().size(); legIndex++) {
+				def leg = cat.getLegs()[legIndex]
+				for (int linkIndex = 0; linkIndex < leg.getChain().getLinks().size(); linkIndex++) {
+					def CoM = linkCoM(leg, linkIndex)
+					def mass = linkMass(leg, linkIndex)
+					xComp += CoM.getX() * mass
+					yComp += CoM.getY() * mass
+					zComp += CoM.getZ() * mass
+					totalMass += mass
+				}
+			}
+			
+			TransformNR CoMtail0 = linkCoM(tail, 0)
+			double tail0Mass = linkMass(tail, 0)
+			xComp += CoMtail0.getX() * tail0Mass
+			yComp += CoMtail0.getY() * tail0Mass
+			zComp += CoMtail0.getZ() * tail0Mass
+			totalMass += tail0Mass
+
+			TransformNR CoMhead0 = linkCoM(head, 0)
+			double head0Mass = linkMass(head, 0)
+			xComp += CoMhead0.getX() * head0Mass
+			yComp += CoMhead0.getY() * head0Mass
+			zComp += CoMhead0.getZ() * head0Mass
+			totalMass += head0Mass
+
+			TransformNR CoMbody = new TransformNR(52.15767635, 0, 115, new RotationNR())
+			double bodyMass = 0.3856
+			xComp += CoMbody.getX() * bodyMass
+			yComp += CoMbody.getY() * bodyMass
+			zComp += CoMbody.getZ() * bodyMass
+			totalMass += bodyMass
+			
+			//TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
+			//robotCoM = T_CoMlegs
+
+			def tailYawLink = tail.getAbstractLink(1)
+			TransformNR bestCoM = new TransformNR(1e+10, 1e+10, 1e+10, new RotationNR())
+			for (double i = tailYawLink.getMinEngineeringUnits(); i < tailYawLink.getMaxEngineeringUnits(); i += 0.53) {
+				double testXComp = xComp
+				double testYComp = yComp
+				double testZComp = zComp
+				double testTotalMass = totalMass
+				
+				TransformNR CoMtail1 = linkCoM(tail, i, 1)
+				double tail1Mass = linkMass(tail, 1)
+				testXComp += CoMtail1.getX() * tail1Mass
+				testYComp += CoMtail1.getY() * tail1Mass
+				testZComp += CoMtail1.getZ() * tail1Mass
+				testTotalMass += tail1Mass
+				
+				TransformNR T_CoMrobot = T_tilt.times(
+					new TransformNR(
+						testXComp, testYComp, testZComp,
+						new RotationNR()
+					)
+				)
+				
+				if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
+					//println("Saved new best CoM at tail angle " + i)
+					balenceAngle = i
+					bestCoM = T_CoMrobot
+				}
+			}
+
+			robotCoM = bestCoM.copy()
+			robotCoM.setZ(0)
+			
 			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
 				timeOfLaseSend=System.currentTimeMillis()
 				// update the pose values for the robot
-				List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
-				println(downGroupTipsInWorldSpace.size())
 				try {
 					Platform.runLater({
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[0], frontFoot.getManipulator())
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[1], backFoot.getManipulator())
+					TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
 				})
 				}catch(Throwable ex) {
 					ex.printStackTrace()
@@ -219,6 +244,7 @@ class PhysicsManagerExample{
 		dev.simple.addEvent(1804, event);
 		BowlerStudioController.addCsg(frontFoot)
 		BowlerStudioController.addCsg(backFoot)
+		BowlerStudioController.addCsg(CoMcube)
 		return true
 	}
 	public void disconnect() {
