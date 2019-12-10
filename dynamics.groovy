@@ -50,15 +50,15 @@ class PhysicsManagerExample{
 				println("tilt="+tilt)
 				double dt = System.currentTimeMillis() - lastTimeTailCompletedSpin
 				double scaledTimeComponent = (dt / timeBase) * 2 * Math.PI
-				if (tilt > 0) {
+				if (tilt < 0) {
 					scaledTimeComponent *= -1
 				}
 				SinComponent = Math.sin(scaledTimeComponent) * tilt * tailRotationGain
 				CosComponent = Math.cos(scaledTimeComponent) * tilt * tailRotationGain
 				//println("SinComponent="+SinComponent)
 				//println("CosComponent="+CosComponent)
-				SinComponent = 0
-				CosComponent = 0
+				//SinComponent = 0
+				//CosComponent = 0
 
 				if (dt >= timeBase) {
 					lastTimeTailCompletedSpin = System.currentTimeMillis()
@@ -106,15 +106,12 @@ class PhysicsManagerExample{
 			zComp += CoMhead0.getZ() * head0Mass
 			totalMass += head0Mass
 
-			TransformNR CoMbody = new TransformNR(52.15767635, 0, 115, new RotationNR())
+			TransformNR CoMbody = new TransformNR(2.15767635, 0, 115, new RotationNR())
 			double bodyMass = 0.3856
 			xComp += CoMbody.getX() * bodyMass
 			yComp += CoMbody.getY() * bodyMass
 			zComp += CoMbody.getZ() * bodyMass
 			totalMass += bodyMass
-			
-			//TransformNR T_CoMlegs = new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR())
-			//robotCoM = T_CoMlegs
 
 			def tailYawLink = tail.getAbstractLink(1)
 			TransformNR bestCoM = new TransformNR(1e+10, 1e+10, 1e+10, new RotationNR())
@@ -130,10 +127,18 @@ class PhysicsManagerExample{
 				testYComp += CoMtail1.getY() * tail1Mass
 				testZComp += CoMtail1.getZ() * tail1Mass
 				testTotalMass += tail1Mass
+
+				//TransformNR CoMhead1 = linkCoM(head, i, 1)
+				TransformNR CoMhead1 = linkCoM(head, 1)
+				double head1Mass = linkMass(head, 1)
+				testXComp += CoMhead1.getX() * head1Mass
+				testYComp += CoMhead1.getY() * head1Mass
+				testZComp += CoMhead1.getZ() * head1Mass
+				testTotalMass += head1Mass
 				
 				TransformNR T_CoMrobot = T_tilt.times(
 					new TransformNR(
-						testXComp, testYComp, testZComp,
+						testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 						new RotationNR()
 					)
 				)
@@ -144,6 +149,7 @@ class PhysicsManagerExample{
 					bestCoM = T_CoMrobot
 				}
 			}
+			//balenceAngle = 0
 
 			robotCoM = bestCoM.copy()
 			robotCoM.setZ(0)
