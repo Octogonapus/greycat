@@ -17,6 +17,7 @@ class PhysicsManagerExample{
      CSG frontFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.GREEN)
      CSG backFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.RED)
      CSG CoMcube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
+     CSG CoMbeforeCube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.LIGHTBLUE)
      TransformNR robotCoM = new TransformNR()
 
 	boolean connected=false;
@@ -28,7 +29,7 @@ class PhysicsManagerExample{
 	boolean poseUpdate=false
 	double timeOfLaseSend=0
 	Runnable event = {
-		println("physics event")
+		//println("physics event")
 		try {
 			if(head==null || tail==null){
 				for(DHParameterKinematics l:cat.getAllDHChains()) {
@@ -47,7 +48,7 @@ class PhysicsManagerExample{
 			
 			if(Math.abs(tilt)>3){
 				// compute the values for the tail here
-				println("tilt="+tilt)
+				//println("tilt="+tilt)
 				double dt = System.currentTimeMillis() - lastTimeTailCompletedSpin
 				double scaledTimeComponent = (dt / timeBase) * 2 * Math.PI
 				if (tilt < 0) {
@@ -106,7 +107,7 @@ class PhysicsManagerExample{
 			zComp += CoMhead0.getZ() * head0Mass
 			totalMass += head0Mass
 
-			TransformNR CoMbody = new TransformNR(2.15767635, 0, 115, new RotationNR())
+			TransformNR CoMbody = new TransformNR(2.15767635, -10, 115, new RotationNR())
 			double bodyMass = 0.3856
 			xComp += CoMbody.getX() * bodyMass
 			yComp += CoMbody.getY() * bodyMass
@@ -168,6 +169,8 @@ class PhysicsManagerExample{
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[0], frontFoot.getManipulator())
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[1], backFoot.getManipulator())
 					TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
+					TransformFactory.nrToAffine(new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
+										   CoMbeforeCube.getManipulator())
 				})
 				}catch(Throwable ex) {
 					ex.printStackTrace()
@@ -257,6 +260,7 @@ class PhysicsManagerExample{
 		BowlerStudioController.addCsg(frontFoot)
 		BowlerStudioController.addCsg(backFoot)
 		BowlerStudioController.addCsg(CoMcube)
+		BowlerStudioController.addCsg(CoMbeforeCube)
 		return true
 	}
 	public void disconnect() {
