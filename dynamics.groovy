@@ -68,7 +68,6 @@ class PhysicsManagerExample{
 			}
 
 			List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
-
 			def fTip = downGroupTipsInWorldSpace[0]
 			def rTip = downGroupTipsInWorldSpace[1]
 			double beta = Math.toDegrees(Math.atan2(fTip.getY()-rTip.getY(), fTip.getX()-rTip.getX()))
@@ -171,8 +170,10 @@ class PhysicsManagerExample{
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[0], frontFoot.getManipulator())
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[1], backFoot.getManipulator())
 					TransformFactory.nrToAffine(robotCoM, CoMwithHeadAndTail.getManipulator())
-					TransformFactory.nrToAffine(new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
-										   CoMwithoutHeadOrTail.getManipulator())
+					TransformFactory.nrToAffine(
+						new TransformNR(
+							xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
+						CoMwithoutHeadOrTail.getManipulator())
 					TransformFactory.nrToAffine(T_tilt, tiltLine.getManipulator())
 				})
 				}catch(Throwable ex) {
