@@ -187,7 +187,7 @@ class PhysicsManagerExample{
 				double[] vect =tail.getCurrentJointSpaceVector()
 				vect[0]=bound(tail,0,-CosComponent*maxOffset)
 				vect[1]=bound(tail,1,balenceAngle+(SinComponent*maxOffset))
-				//tail.setDesiredJointSpaceVector(vect, 0)
+				tail.setDesiredJointSpaceVector(vect, 0)
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace()

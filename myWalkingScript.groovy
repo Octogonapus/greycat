@@ -494,5 +494,5 @@ homeLegs(base)
 Thread.sleep(500)
 
 TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
-walkBase(base, fiducialToGlobal, new TransformNR(500, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 2000)
+walkBase(base, fiducialToGlobal, new TransformNR(500, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 5000)
 walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 100, 0)).inverse(), 8, 10, 500)
