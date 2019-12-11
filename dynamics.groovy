@@ -18,6 +18,7 @@ class PhysicsManagerExample{
      CSG backFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.RED)
      CSG CoMwithHeadAndTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
      CSG CoMwithoutHeadOrTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.LIGHTBLUE)
+     CSG tiltLine = new Cube(200, 2, 2).toCSG().toXMin().setColor(javafx.scene.paint.Color.WHITE)
      TransformNR robotCoM = new TransformNR()
 
 	boolean connected=false;
@@ -67,14 +68,13 @@ class PhysicsManagerExample{
 			}
 
 			List<TransformNR> downGroupTipsInWorldSpace = getDownGroupTipsInWorldSpace()
-			
-			double beta = Math.atan2(
-				downGroupTipsInWorldSpace[0].getX() - downGroupTipsInWorldSpace[1].getX(),
-				downGroupTipsInWorldSpace[0].getY() - downGroupTipsInWorldSpace[1].getY()
-			)
+
+			def fTip = downGroupTipsInWorldSpace[0]
+			def rTip = downGroupTipsInWorldSpace[1]
+			double beta = Math.toDegrees(Math.atan2(fTip.getY()-rTip.getY(), fTip.getX()-rTip.getX()))
 			TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
 			TransformNR T_tilt = T_beta.inverse().times(
-				new TransformNR(downGroupTipsInWorldSpace[1].getX(), downGroupTipsInWorldSpace[1].getY(), 0, new RotationNR())
+				new TransformNR(rTip.getX(), rTip.getY(), 0, new RotationNR())
 			)
 			
 			double xComp = 0.0
@@ -137,16 +137,16 @@ class PhysicsManagerExample{
 				testZComp += CoMhead1.getZ() * head1Mass
 				testTotalMass += head1Mass
 				
-				/*TransformNR T_CoMrobot = T_tilt.times(
+				TransformNR T_CoMrobot = T_tilt.times(
 					new TransformNR(
 						testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 						new RotationNR()
 					)
-				)*/
-				TransformNR T_CoMrobot = new TransformNR(
+				)
+				/*TransformNR T_CoMrobot = new TransformNR(
 					testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 					new RotationNR()
-				)
+				)*/
 
 				println(T_CoMrobot.getY())
 				
@@ -157,7 +157,7 @@ class PhysicsManagerExample{
 					bestCoM = T_CoMrobot
 				}
 			}
-			throw fhdskfskjfkjds
+			//throw fhdskfskjfkjds
 
 			robotCoM = bestCoM.copy()
 			println("CoM.y before tail correction: " + yComp / totalMass)
@@ -173,6 +173,7 @@ class PhysicsManagerExample{
 					TransformFactory.nrToAffine(robotCoM, CoMwithHeadAndTail.getManipulator())
 					TransformFactory.nrToAffine(new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
 										   CoMwithoutHeadOrTail.getManipulator())
+					TransformFactory.nrToAffine(T_tilt, tiltLine.getManipulator())
 				})
 				}catch(Throwable ex) {
 					ex.printStackTrace()
@@ -263,6 +264,7 @@ class PhysicsManagerExample{
 		BowlerStudioController.addCsg(backFoot)
 		BowlerStudioController.addCsg(CoMwithHeadAndTail)
 		BowlerStudioController.addCsg(CoMwithoutHeadOrTail)
+		BowlerStudioController.addCsg(tiltLine)
 		return true
 	}
 	public void disconnect() {
