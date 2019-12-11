@@ -140,17 +140,17 @@ class PhysicsManagerExample{
 					new TransformNR(
 						testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 						new RotationNR()
-					)
+					).inverse()
 				)
 				/*TransformNR T_CoMrobot = new TransformNR(
 					testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 					new RotationNR()
 				)*/
 
-				println(T_CoMrobot.getY())
+				//println(T_CoMrobot.getY())
 				
 				if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
-					println("Saved new best CoM at tail angle " + i)
+					//println("Saved new best CoM at tail angle " + i)
 					//println("New CoM.y: " + T_CoMrobot.getY())
 					balenceAngle = i
 					bestCoM = T_CoMrobot
@@ -159,8 +159,9 @@ class PhysicsManagerExample{
 			//throw fhdskfskjfkjds
 
 			robotCoM = bestCoM.copy()
-			println("CoM.y before tail correction: " + yComp / totalMass)
-			println("CoM.y after tail correction: " + bestCoM.getY())
+			robotCoM.setZ(0)
+			//println("CoM.y before tail correction: " + yComp / totalMass)
+			//println("CoM.y after tail correction: " + bestCoM.getY())
 			
 			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
 				timeOfLaseSend=System.currentTimeMillis()
@@ -172,7 +173,7 @@ class PhysicsManagerExample{
 					TransformFactory.nrToAffine(robotCoM, CoMwithHeadAndTail.getManipulator())
 					TransformFactory.nrToAffine(
 						new TransformNR(
-							xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
+							xComp / totalMass, yComp / totalMass, 0, new RotationNR()),
 						CoMwithoutHeadOrTail.getManipulator())
 					TransformFactory.nrToAffine(T_tilt, tiltLine.getManipulator())
 				})
@@ -186,7 +187,7 @@ class PhysicsManagerExample{
 				double[] vect =tail.getCurrentJointSpaceVector()
 				vect[0]=bound(tail,0,-CosComponent*maxOffset)
 				vect[1]=bound(tail,1,balenceAngle+(SinComponent*maxOffset))
-				tail.setDesiredJointSpaceVector(vect, 0)
+				//tail.setDesiredJointSpaceVector(vect, 0)
 			}
 		}catch(Exception ex) {
 			ex.printStackTrace()
