@@ -16,8 +16,8 @@ class PhysicsManagerExample{
      def groupB = cat.getLegs().subList(2, 4)
      CSG frontFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.GREEN)
      CSG backFoot = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.RED)
-     CSG CoMcube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
-     CSG CoMbeforeCube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.LIGHTBLUE)
+     CSG CoMwithHeadAndTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
+     CSG CoMwithoutHeadOrTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.LIGHTBLUE)
      TransformNR robotCoM = new TransformNR()
 
 	boolean connected=false;
@@ -137,29 +137,31 @@ class PhysicsManagerExample{
 				testZComp += CoMhead1.getZ() * head1Mass
 				testTotalMass += head1Mass
 				
-				TransformNR T_CoMrobot = T_tilt.times(
+				/*TransformNR T_CoMrobot = T_tilt.times(
 					new TransformNR(
 						testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
 						new RotationNR()
 					)
+				)*/
+				TransformNR T_CoMrobot = new TransformNR(
+					testXComp / testTotalMass, testYComp / testTotalMass, testZComp / testTotalMass,
+					new RotationNR()
 				)
 
-				robotCoM = T_CoMrobot.copy()
-				robotCoM.setZ(0)
-				//Platform.runLater({
-				//	TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
-				//})
-				//Thread.sleep(500)
+				println(T_CoMrobot.getY())
 				
 				if (Math.abs(T_CoMrobot.getY()) < Math.abs(bestCoM.getY())) {
-					//println("Saved new best CoM at tail angle " + i)
+					println("Saved new best CoM at tail angle " + i)
+					//println("New CoM.y: " + T_CoMrobot.getY())
 					balenceAngle = i
 					bestCoM = T_CoMrobot
 				}
 			}
+			throw fhdskfskjfkjds
 
-			//robotCoM = bestCoM.copy()
-			//robotCoM.setZ(0)
+			robotCoM = bestCoM.copy()
+			println("CoM.y before tail correction: " + yComp / totalMass)
+			println("CoM.y after tail correction: " + bestCoM.getY())
 			
 			if(System.currentTimeMillis() > timeOfLaseSend + 20) {
 				timeOfLaseSend=System.currentTimeMillis()
@@ -168,9 +170,9 @@ class PhysicsManagerExample{
 					Platform.runLater({
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[0], frontFoot.getManipulator())
 					TransformFactory.nrToAffine(downGroupTipsInWorldSpace[1], backFoot.getManipulator())
-					TransformFactory.nrToAffine(robotCoM, CoMcube.getManipulator())
+					TransformFactory.nrToAffine(robotCoM, CoMwithHeadAndTail.getManipulator())
 					TransformFactory.nrToAffine(new TransformNR(xComp / totalMass, yComp / totalMass, zComp / totalMass, new RotationNR()),
-										   CoMbeforeCube.getManipulator())
+										   CoMwithoutHeadOrTail.getManipulator())
 				})
 				}catch(Throwable ex) {
 					ex.printStackTrace()
@@ -259,8 +261,8 @@ class PhysicsManagerExample{
 		dev.simple.addEvent(1804, event);
 		BowlerStudioController.addCsg(frontFoot)
 		BowlerStudioController.addCsg(backFoot)
-		BowlerStudioController.addCsg(CoMcube)
-		BowlerStudioController.addCsg(CoMbeforeCube)
+		BowlerStudioController.addCsg(CoMwithHeadAndTail)
+		BowlerStudioController.addCsg(CoMwithoutHeadOrTail)
 		return true
 	}
 	public void disconnect() {
