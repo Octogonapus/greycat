@@ -73,8 +73,8 @@ class PhysicsManagerExample{
 			double beta = Math.toDegrees(Math.atan2(fTip.getY()-rTip.getY(), fTip.getX()-rTip.getX()))
 			TransformNR T_beta = new TransformNR(0, 0, 0, new RotationNR(0, beta, 0))
 			TransformNR T_tilt = T_beta.inverse().times(
-				new TransformNR(rTip.getX(), rTip.getY(), 0, new RotationNR())
-			)
+				new TransformNR(rTip.getX(), rTip.getY(), 0, new RotationNR()).inverse()
+			).inverse()
 			
 			double xComp = 0.0
 			double yComp = 0.0
