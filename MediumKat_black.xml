@@ -139,7 +139,7 @@
 	<lowerLimit>1.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>75.0</staticOffset>
+	<staticOffset>145.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>145</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -226,7 +226,7 @@
 	<lowerLimit>0.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>70.0</staticOffset>
+	<staticOffset>63.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>105</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -280,7 +280,7 @@
 	<lowerLimit>0.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>90.0</staticOffset>
+	<staticOffset>100.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>97</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -334,7 +334,7 @@
 	<lowerLimit>0.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>75.0</staticOffset>
+	<staticOffset>78.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>145</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -421,7 +421,7 @@
 	<lowerLimit>35.625</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>90.0</staticOffset>
+	<staticOffset>83.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>105</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -529,7 +529,7 @@
 	<lowerLimit>0.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>75.0</staticOffset>
+	<staticOffset>105.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>145</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
@@ -616,7 +616,7 @@
 	<lowerLimit>30.0</lowerLimit>
 	<upperVelocity>1.0E8</upperVelocity>
 	<lowerVelocity>-1.0E8</lowerVelocity>
-	<staticOffset>50.0</staticOffset>
+	<staticOffset>55.0</staticOffset>
 	<isLatch>true</isLatch>
 	<indexLatch>105</indexLatch>
 	<isStopOnLatch>false</isStopOnLatch>
