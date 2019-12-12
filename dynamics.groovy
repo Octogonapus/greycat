@@ -19,6 +19,7 @@ class PhysicsManagerExample{
      CSG CoMwithHeadAndTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.WHEAT)
      CSG CoMwithoutHeadOrTail = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.LIGHTBLUE)
      CSG tiltLine = new Cube(200, 2, 2).toCSG().toXMin().setColor(javafx.scene.paint.Color.WHITE)
+     CSG imuCube = new Cube(20).toCSG().setColor(javafx.scene.paint.Color.BLUE)
      TransformNR robotCoM = new TransformNR()
 
 	boolean connected=false;
@@ -42,6 +43,14 @@ class PhysicsManagerExample{
 					}
 				}
 			}
+
+			// TODO: indices 9 and 10 are swapped as of writing this.
+			// they may need to be swapped again in the future
+			TransformNR T_imu = new TransformNR(
+				0, 0, 0,
+				new RotationNR(-imuDataValues[9], 0, -imuDataValues[10])
+			).times(new TransformNR(0, 0, 0, new RotationNR(0, 0, 0)))
+			
 			double tilt = imuDataValues[10]
 			double SinComponent=0
 			double CosComponent=0
@@ -106,7 +115,8 @@ class PhysicsManagerExample{
 			zComp += CoMhead0.getZ() * head0Mass
 			totalMass += head0Mass
 
-			TransformNR CoMbody = new TransformNR(2.15767635, -10, 115, new RotationNR())
+			// new TransformNR(2.15767635, -10, 115, new RotationNR())
+			TransformNR CoMbody = new TransformNR(0, 0, 160, new RotationNR())
 			double bodyMass = 0.3856
 			xComp += CoMbody.getX() * bodyMass
 			yComp += CoMbody.getY() * bodyMass
@@ -176,6 +186,7 @@ class PhysicsManagerExample{
 							xComp / totalMass, yComp / totalMass, 0, new RotationNR()),
 						CoMwithoutHeadOrTail.getManipulator())
 					TransformFactory.nrToAffine(T_tilt, tiltLine.getManipulator())
+					TransformFactory.nrToAffine(T_imu, imuCube.getManipulator())
 				})
 				}catch(Throwable ex) {
 					ex.printStackTrace()
@@ -267,6 +278,7 @@ class PhysicsManagerExample{
 		BowlerStudioController.addCsg(CoMwithHeadAndTail)
 		BowlerStudioController.addCsg(CoMwithoutHeadOrTail)
 		BowlerStudioController.addCsg(tiltLine)
+		BowlerStudioController.addCsg(imuCube)
 		return true
 	}
 	public void disconnect() {
