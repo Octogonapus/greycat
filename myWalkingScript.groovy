@@ -459,7 +459,7 @@ void walkBase(
 				profileB,
 				fiducialToGlobal,
 				numberOfIncrements,
-				6
+				7
 			)
 			
 			followInterpolatedGroupProfiles(
@@ -494,5 +494,6 @@ homeLegs(base)
 Thread.sleep(500)
 
 TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
-walkBase(base, fiducialToGlobal, new TransformNR(-460, 0, 0, new RotationNR(0, 0, 0)).inverse(), 12, 10, 300)
-walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 75, 0)).inverse(), 10, 10, 300)
+//walkBase(base, fiducialToGlobal, new TransformNR(-460, 0, 0, new RotationNR(0, 0, 0)).inverse(), 12, 10, 300)
+//walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 75, 0)).inverse(), 10, 10, 300)
+walkBase(base, fiducialToGlobal, new TransformNR(500, 0, 0, new RotationNR(0, 0, 0)).inverse(), 12, 10, 2000)
