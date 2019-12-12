@@ -119,7 +119,7 @@ void followTransforms(
             def tipTargetInWorldSpace = tipPositions[j]
             
             // TODO: Remove this offset
-            def foo = tipTargetInWorldSpace.times(new TransformNR(10, 0, 0, new RotationNR()))
+            def foo = tipTargetInWorldSpace.times(new TransformNR(0, 0, 0, new RotationNR()))
 
             // Only move to the tip target if it is reachable or else the IK blows up
             if (leg.checkTaskSpaceTransform(foo)) {
@@ -439,7 +439,7 @@ void walkBase(
     def groupB = base.getLegs().subList(2, 4)
     
     TransformNR nextBaseDelta = baseDelta
-    double nextBaseDeltaScale = 1.0
+    double nextBaseDeltaScale = 0.3
     double percentOfBaseDeltaCompleted = 0.0
 
 	while (percentOfBaseDeltaCompleted < 1.0) {
@@ -494,5 +494,5 @@ homeLegs(base)
 Thread.sleep(500)
 
 TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
-walkBase(base, fiducialToGlobal, new TransformNR(500, 0, 0, new RotationNR(0, 0, 0)).inverse(), 10, 10, 5000)
-walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 100, 0)).inverse(), 8, 10, 500)
+walkBase(base, fiducialToGlobal, new TransformNR(-460, 0, 0, new RotationNR(0, 0, 0)).inverse(), 12, 10, 300)
+walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 75, 0)).inverse(), 10, 10, 300)
