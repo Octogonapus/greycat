@@ -6,7 +6,7 @@
 	</cadEngine>
 	<driveEngine>
 		<git>https://github.com/Octogonapus/greycat.git</git>
-		<file>walking.groovy</file>
+		<file>myWalkingScript.groovy</file>
 	</driveEngine>
 
 <name>MediumKat</name>
