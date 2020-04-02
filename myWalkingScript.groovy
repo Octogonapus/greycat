@@ -439,7 +439,7 @@ void walkBase(
     def groupB = base.getLegs().subList(2, 4)
     
     TransformNR nextBaseDelta = baseDelta
-    double nextBaseDeltaScale = 0.3
+    double nextBaseDeltaScale = 1.0
     double percentOfBaseDeltaCompleted = 0.0
 
 	while (percentOfBaseDeltaCompleted < 1.0) {
@@ -461,7 +461,7 @@ void walkBase(
 				numberOfIncrements,
 				7
 			)
-			
+
 			followInterpolatedGroupProfiles(
 				[groupA, groupB],
 				[interpolatedProfileA, interpolatedProfileB],
@@ -485,10 +485,17 @@ void walkBase(
 
 Log.enableSystemPrint(true)
 
+def dev = DeviceManager.getSpecificDevice("hidDevice")
+if (dev == null) {
+	throw new IllegalStateException("hidDevice was null");
+}
+
 MobileBase base = DeviceManager.getSpecificDevice("MediumKat") as MobileBase
 if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
 }
+
+double[] imuDataValues = dev.simple.getImuData() // data kept up to date by device coms thread
 
 homeLegs(base)
 Thread.sleep(500)
@@ -496,9 +503,24 @@ Thread.sleep(500)
 TransformNR fiducialToGlobal = base.getFiducialToGlobalTransform()
 //walkBase(base, fiducialToGlobal, new TransformNR(-460, 0, 0, new RotationNR(0, 0, 0)).inverse(), 12, 10, 300)
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 75, 0)).inverse(), 10, 10, 300)
-
+/*
 walkBase(base, fiducialToGlobal, new TransformNR(480, 0, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 homeLegs(base)
 Thread.sleep(200)
 walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 0)).inverse(), 15, 10, 300)
-homeLegs(base)
+homeLegs(base)*/
+//walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
+
+
+while (!Thread.currentThread().isInterrupted()) {
+	double kTilt = -5
+	double tilt = imuDataValues[10]
+	if (Math.abs(tilt) > 5) {
+		walkBase(base, fiducialToGlobal, new TransformNR(0, kTilt * tilt, 0, new RotationNR(0, 0, 0)).inverse(), 30, 10, 300)
+	} else {
+		homeLegs(base)
+	}
+}
+
+
+
