@@ -513,10 +513,19 @@ homeLegs(base)*/
 
 
 while (!Thread.currentThread().isInterrupted()) {
-	double kTilt = -5
+	// TODO: Test the new control terms
+	double kTilt_stepLength = -3
+	double kTilt_stepHeight = 2
+	double kTiltRate_stepLength = -1
+	
 	double tilt = imuDataValues[10]
+	double tiltRate = imuDataValues[4]
+	println("tilt=" + tilt + "\ttiltRate=" + tiltRate)
+	
 	if (Math.abs(tilt) > 5) {
-		walkBase(base, fiducialToGlobal, new TransformNR(0, kTilt * tilt, 0, new RotationNR(0, 0, 0)).inverse(), 30, 10, 300)
+		double stepLength = kTilt_stepLength * tilt + kTiltRate_stepLength * tiltRate
+		double stepHeight = 20 + kTilt_stepHeight * tilt
+		walkBase(base, fiducialToGlobal, new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, 300)
 	} else {
 		homeLegs(base)
 	}
