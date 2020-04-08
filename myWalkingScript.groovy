@@ -125,7 +125,7 @@ void followTransforms(
             if (leg.checkTaskSpaceTransform(foo)) {
                 leg.setDesiredTaskSpaceTransform(foo, 0)
             } else {
-            	print("Skipped transform in followTransforms. point=" + i + ", leg=" + j + "\n")
+            	//print("Skipped transform in followTransforms. point=" + i + ", leg=" + j + "\n")
             }
         }
 
@@ -250,9 +250,9 @@ List<TransformNR> createLimbTipMotionProfile(
 
             // Don't continue if the tip target is unreachable
             if (!leg.checkTaskSpaceTransform(newTip)) {
-                println("New tip:\n" + newTip + "\n")
-                println("Body delta:\n" + profileBodyDelta + "\n")
-                println("New body:\n" + globalFiducial.times(profileBodyDelta) + "\n")
+                //println("New tip:\n" + newTip + "\n")
+                //println("Body delta:\n" + profileBodyDelta + "\n")
+                //println("New body:\n" + globalFiducial.times(profileBodyDelta) + "\n")
 
                 throw new UnreachableTransformException(
                 		leg,
@@ -471,7 +471,7 @@ void walkBase(
 			percentOfBaseDeltaCompleted += nextBaseDeltaScale
 		} catch (UnreachableTransformException ex) {
 			nextBaseDeltaScale *= 0.75
-			print("New scale: " + nextBaseDeltaScale + "\n")
+			//print("New scale: " + nextBaseDeltaScale + "\n")
 			if (percentOfBaseDeltaCompleted + nextBaseDeltaScale < 1.0) {
 				// The next delta will not move further than the original delta, so we can follow it
 				nextBaseDelta = baseDelta.scale(nextBaseDeltaScale)
@@ -512,23 +512,62 @@ homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
 
+long lastPrintTime = System.currentTimeMillis()
+
 while (!Thread.currentThread().isInterrupted()) {
 	// TODO: Test the new control terms
 	double kTilt_stepLength = -3
-	double kTilt_stepHeight = 2
-	double kTiltRate_stepLength = -1
+	double kTilt_stepHeight = 1
+	double kTiltRate_stepLength = -0
+
+	double maxStepHeight = 35
+	double minStepHeight = 10
 	
 	double tilt = imuDataValues[10]
 	double tiltRate = imuDataValues[4]
-	println("tilt=" + tilt + "\ttiltRate=" + tiltRate)
-	
-	if (Math.abs(tilt) > 5) {
-		double stepLength = kTilt_stepLength * tilt + kTiltRate_stepLength * tiltRate
-		double stepHeight = 20 + kTilt_stepHeight * tilt
-		walkBase(base, fiducialToGlobal, new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(), stepHeight, 10, 300)
-	} else {
-		homeLegs(base)
+	//println("tilt=" + tilt + "\ttiltRate=" + tiltRate)
+
+	long now = System.currentTimeMillis()
+	if (now - lastPrintTime > 500) {
+		lastPrintTime = now
+		/*for (double elem : imuDataValues) {
+			print("" + elem + ", ")
+		}
+		print("\n")*/
+		//println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
 	}
+	
+	if (Math.abs(tilt + tiltRate * 0.1) > 5) {
+		double stepLength = kTilt_stepLength * tilt //+ kTiltRate_stepLength * tiltRate
+		double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
+
+		if (stepHeight > maxStepHeight) {
+			stepHeight = maxStepHeight
+		} else if (stepHeight < minStepHeight) {
+			stepHeight = minStepHeight
+		}
+		
+		try {
+			walkBase(
+				base,
+				fiducialToGlobal,
+				new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
+				stepHeight,
+				10,
+				200
+			)
+		} catch (Exception ex) {
+			BowlerStudio.printStackTrace(ex)
+		}
+	} else {
+		try {
+			homeLegs(base)
+		} catch (Exception ex) {
+			BowlerStudio.printStackTrace(ex)
+		}
+	}
+
+	Thread.sleep(1)
 }
 
 
