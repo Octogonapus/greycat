@@ -555,8 +555,8 @@ walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 
 homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
-double kTilt_stepLength = -3
-double kTilt_stepHeight = 1
+double kTilt_stepLength = -4
+double kTilt_stepHeight = 2
 double kTiltRate_stepLength = -0
 
 double maxStepHeight = 35

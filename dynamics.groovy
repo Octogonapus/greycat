@@ -54,7 +54,7 @@ class PhysicsManagerExample{
 			double tilt = imuDataValues[10]
 			double SinComponent=0
 			double CosComponent=0
-			double tailRotationGain = 1.0/90.0
+			double tailRotationGain = 10.0/90.0
 			
 			if(Math.abs(tilt)>3){
 				// compute the values for the tail here
@@ -192,7 +192,8 @@ class PhysicsManagerExample{
 					ex.printStackTrace()
 				}
 			}
-			if(head!=null && tail!=null){
+			
+			if(head!=null && tail!=null && Math.abs(tilt) < 20){
 				//println "Values:"+balenceAngle
 				//boundSet(head,1,-balenceAngle)
 				double[] vect =tail.getCurrentJointSpaceVector()
