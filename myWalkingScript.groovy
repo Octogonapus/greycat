@@ -483,6 +483,43 @@ void walkBase(
 	}
 }
 
+double bound(DHParameterKinematics d, int index,double value) {
+	def l1 = d.getAbstractLink(index)
+	if(value>l1.getMaxEngineeringUnits()){
+		value=l1.getMaxEngineeringUnits();
+	}
+	if(value<l1.getMinEngineeringUnits()){
+		value=l1.getMinEngineeringUnits();
+	}
+	return value
+}
+
+long spinTail(double tilt, DHParameterKinematics tail, long lastTimeTailCompletedSpin) {
+	double timeBase = 300
+	double maxOffset = 40
+	double tailRotationGain = 90.0/90.0
+	double dt = System.currentTimeMillis() - lastTimeTailCompletedSpin
+	double scaledTimeComponent = (dt / timeBase) * 2 * Math.PI * -1
+	
+	if (tilt < 0) {
+		scaledTimeComponent *= -1
+	}
+
+	SinComponent = Math.sin(scaledTimeComponent) * tailRotationGain
+	CosComponent = Math.cos(scaledTimeComponent) * tailRotationGain
+
+	if (dt >= timeBase) {
+		lastTimeTailCompletedSpin = System.currentTimeMillis()
+	}
+
+	double[] vect =tail.getCurrentJointSpaceVector()
+	vect[0]=bound(tail,0,-CosComponent*maxOffset)
+	vect[1]=bound(tail,1,SinComponent*maxOffset)
+	tail.setDesiredJointSpaceVector(vect, 0)
+
+	return lastTimeTailCompletedSpin
+}
+
 Log.enableSystemPrint(true)
 
 def dev = DeviceManager.getSpecificDevice("hidDevice")
@@ -493,6 +530,13 @@ if (dev == null) {
 MobileBase base = DeviceManager.getSpecificDevice("MediumKat") as MobileBase
 if (base == null) {
     throw new IllegalStateException("MediumKat device was null.");
+}
+
+DHParameterKinematics tail = null
+for(DHParameterKinematics l : base.getAllDHChains()) {
+	if(l.getScriptingName().contains("Tail")) {
+		tail = l
+	}
 }
 
 double[] imuDataValues = dev.simple.getImuData() // data kept up to date by device coms thread
@@ -511,18 +555,18 @@ walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 
 homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
+double kTilt_stepLength = -3
+double kTilt_stepHeight = 1
+double kTiltRate_stepLength = -0
+
+double maxStepHeight = 35
+double minStepHeight = 10
 
 long lastPrintTime = System.currentTimeMillis()
+long lastTimeTailCompletedSpin = 0
+boolean fellOver = false
 
 while (!Thread.currentThread().isInterrupted()) {
-	// TODO: Test the new control terms
-	double kTilt_stepLength = -3
-	double kTilt_stepHeight = 1
-	double kTiltRate_stepLength = -0
-
-	double maxStepHeight = 35
-	double minStepHeight = 10
-	
 	double tilt = imuDataValues[10]
 	double tiltRate = imuDataValues[4]
 	//println("tilt=" + tilt + "\ttiltRate=" + tiltRate)
@@ -534,36 +578,61 @@ while (!Thread.currentThread().isInterrupted()) {
 			print("" + elem + ", ")
 		}
 		print("\n")*/
-		//println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
+		println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
 	}
-	
-	if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
-		double stepLength = kTilt_stepLength * tilt //+ kTiltRate_stepLength * tiltRate
-		double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
 
-		if (stepHeight > maxStepHeight) {
-			stepHeight = maxStepHeight
-		} else if (stepHeight < minStepHeight) {
-			stepHeight = minStepHeight
-		}
-		
-		try {
-			walkBase(
-				base,
-				fiducialToGlobal,
-				new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
-				stepHeight,
-				10,
-				200
-			)
-		} catch (Exception ex) {
-			BowlerStudio.printStackTrace(ex)
+	if (fellOver) {
+		// We fell over
+		if (Math.abs(tilt) > 5) {
+			// We haven't gotten back up yet
+			lastTimeTailCompletedSpin = spinTail(tilt, tail, lastTimeTailCompletedSpin)
+		} else {
+			// We have gotten back up
+			fellOver = false
+
+			// Home the tail
+			double[] vect = [0.0, 0.0]
+			tail.setDesiredJointSpaceVector(vect, 0)
 		}
 	} else {
-		try {
+		// We did not fall over (yet)
+		if (Math.abs(tilt) > 20) {
+			// Actually, we did fall over
+			fellOver = true
+			// Bring feet close to the body
+			moveBaseWithLimbsPlanted(
+				base,
+				fiducialToGlobal,
+				new TransformNR(0, 0, -20, new RotationNR(0, 0, 0)).inverse(),
+				5,
+				100
+			)
+		} else if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
+			// We are going to fall over
+			double stepLength = kTilt_stepLength * tilt //+ kTiltRate_stepLength * tiltRate
+			double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
+	
+			if (stepHeight > maxStepHeight) {
+				stepHeight = maxStepHeight
+			} else if (stepHeight < minStepHeight) {
+				stepHeight = minStepHeight
+			}
+			
+			try {
+				walkBase(
+					base,
+					fiducialToGlobal,
+					new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
+					stepHeight,
+					10,
+					200
+				)
+			} catch (Exception ex) {
+				BowlerStudio.printStackTrace(ex)
+			}
+		} else {
+			// We are not going to fall over
 			homeLegs(base)
-		} catch (Exception ex) {
-			BowlerStudio.printStackTrace(ex)
 		}
 	}
 
