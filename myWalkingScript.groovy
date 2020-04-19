@@ -537,7 +537,7 @@ while (!Thread.currentThread().isInterrupted()) {
 		//println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
 	}
 	
-	if (Math.abs(tilt + tiltRate * 0.1) > 5) {
+	if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
 		double stepLength = kTilt_stepLength * tilt //+ kTiltRate_stepLength * tiltRate
 		double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
 
