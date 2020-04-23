@@ -483,6 +483,14 @@ void walkBase(
 	}
 }
 
+double minEngineeringUnits(DHParameterKinematics d, int index) {
+	return d.getAbstractLink(index).getMinEngineeringUnits()
+}
+
+double maxEngineeringUnits(DHParameterKinematics d, int index) {
+	return d.getAbstractLink(index).getMaxEngineeringUnits()
+}
+
 double bound(DHParameterKinematics d, int index,double value) {
 	def l1 = d.getAbstractLink(index)
 	if(value>l1.getMaxEngineeringUnits()){
@@ -555,7 +563,11 @@ walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 
 homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
-double kTilt_stepLength = -4
+tail.setDesiredJointSpaceVector([maxEngineeringUnits(tail, 0), 0] as double[], 0)
+
+return
+
+/*double kTilt_stepLength = -4
 double kTilt_stepHeight = 2
 double kTiltRate_stepLength = -0
 
@@ -574,10 +586,6 @@ while (!Thread.currentThread().isInterrupted()) {
 	long now = System.currentTimeMillis()
 	if (now - lastPrintTime > 500) {
 		lastPrintTime = now
-		/*for (double elem : imuDataValues) {
-			print("" + elem + ", ")
-		}
-		print("\n")*/
 		println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
 	}
 
@@ -641,3 +649,4 @@ while (!Thread.currentThread().isInterrupted()) {
 
 
 
+*/
