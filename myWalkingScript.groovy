@@ -563,7 +563,50 @@ walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 
 homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
-tail.setDesiredJointSpaceVector([maxEngineeringUnits(tail, 0), 0] as double[], 0)
+def determineLegsDuringFall(MobileBase base, double tilt) {
+	if (tilt > 0) {
+		return [
+			base.getAllDHChains().find { it.getScriptingName() == "FrontLeft" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearLeft" }
+		]
+	} else {
+		return [
+			base.getAllDHChains().find { it.getScriptingName() == "FrontRight" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearRight" }
+		]
+	}
+}
+
+void recoverFromFall(DHParameterKinematics topLeg, DHParameterKinematics bottomLeg, DHParameterKinematics tail) {
+	topLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(topLeg, 0),
+			maxEngineeringUnits(topLeg, 1),
+			0
+		] as double[],
+		0
+	)
+	
+	bottomLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(bottomLeg, 0),
+			maxEngineeringUnits(bottomLeg, 1),
+			0
+		] as double[],
+		0
+	)
+	
+	tail.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(tail, 0),
+			maxEngineeringUnits(tail, 1)
+		] as double[],
+		0
+	)
+}
+
+def legs = determineLegsDuringFall(base, 1)
+recoverFromFall(legs[0], legs[1], tail)
 
 return
 
