@@ -3,6 +3,7 @@ import com.neuronrobotics.sdk.addons.kinematics.IDriveEngine
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
 import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import com.neuronrobotics.sdk.common.BowlerAbstractDevice
 import com.neuronrobotics.sdk.common.DeviceManager
 import com.neuronrobotics.sdk.common.Log
 import org.apache.commons.math3.analysis.function.Sin
@@ -494,8 +495,23 @@ class SingleBaseEngine {
     private double lastSeconds
     private long lastCallTime
 
+    def dev = DeviceManager.getSpecificDevice("hidDevice")
+    double[] imuDataValues
+    double kTilt_stepLength = -4
+    double kTilt_stepHeight = 2
+    double kTiltRate_stepLength = -0
+    double maxStepHeight = 35
+    double minStepHeight = 10
+    boolean fellOver = false
+
     SingleBaseEngine(MobileBase mobileBase) {
         this.mobileBase = mobileBase
+
+        if (dev == null) {
+            throw new IllegalStateException("hidDevice was null")
+        }
+
+        imuDataValues = dev.simple.getImuData() // data kept up to date by device coms thread
     }
 
     void DriveArc(TransformNR transformNR, double seconds) {
@@ -554,8 +570,52 @@ class SingleBaseEngine {
                     semaphore.release()
                 }
 
-//                println("Walking " + velocity)
-                walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, 300)
+                double tilt = imuDataValues[10]
+                double tiltRate = imuDataValues[4]
+
+                if (fellOver) {
+                    // We fell over
+                    if (Math.abs(tilt) > 5) {
+                        // We haven't gotten back up yet
+                    } else {
+                        // We have gotten back up
+                        fellOver = false
+                    }
+                } else {
+                    // We did not fall over (yet)
+                    if (Math.abs(tilt) > 20) {
+                        // Actually, we did fall over
+                        fellOver = true
+                    } else if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
+                        // We are going to fall over
+                        double stepLength = kTilt_stepLength * tilt
+                        //+ kTiltRate_stepLength * tiltRate
+                        double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
+
+                        if (stepHeight > maxStepHeight) {
+                            stepHeight = maxStepHeight
+                        } else if (stepHeight < minStepHeight) {
+                            stepHeight = minStepHeight
+                        }
+
+//            walkBase(
+//                    base,
+//                    fiducialToGlobal,
+//                    new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
+//                    stepHeight,
+//                    10,
+//                    200
+//            )
+
+                        TransformNR balanceTransform = new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse()
+
+                        // println("Walking " + velocity)
+                        walkBase(mobileBase, fiducialToGlobal, velocity.times(balanceTransform), stepHeight, 10, 300)
+                    } else {
+                        // We are not going to fall over
+                        walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, 300)
+                    }
+                }
             }
 
 //            println("Exited thread")
@@ -596,87 +656,3 @@ class MyDriveEngine implements IDriveEngine {
 }
 
 return new MyDriveEngine()
-
-/*double kTilt_stepLength = -4
-double kTilt_stepHeight = 2
-double kTiltRate_stepLength = -0
-
-double maxStepHeight = 35
-double minStepHeight = 10
-
-long lastPrintTime = System.currentTimeMillis()
-long lastTimeTailCompletedSpin = 0
-boolean fellOver = false
-
-while (!Thread.currentThread().isInterrupted()) {
-	double tilt = imuDataValues[10]
-	double tiltRate = imuDataValues[4]
-	//println("tilt=" + tilt + "\ttiltRate=" + tiltRate)
-
-	long now = System.currentTimeMillis()
-	if (now - lastPrintTime > 500) {
-		lastPrintTime = now
-		println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
-	}
-
-	if (fellOver) {
-		// We fell over
-		if (Math.abs(tilt) > 5) {
-			// We haven't gotten back up yet
-			lastTimeTailCompletedSpin = spinTail(tilt, tail, lastTimeTailCompletedSpin)
-		} else {
-			// We have gotten back up
-			fellOver = false
-
-			// Home the tail
-			double[] vect = [0.0, 0.0]
-			tail.setDesiredJointSpaceVector(vect, 0)
-		}
-	} else {
-		// We did not fall over (yet)
-		if (Math.abs(tilt) > 20) {
-			// Actually, we did fall over
-			fellOver = true
-			// Bring feet close to the body
-			moveBaseWithLimbsPlanted(
-				base,
-				fiducialToGlobal,
-				new TransformNR(0, 0, -20, new RotationNR(0, 0, 0)).inverse(),
-				5,
-				100
-			)
-		} else if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
-			// We are going to fall over
-			double stepLength = kTilt_stepLength * tilt //+ kTiltRate_stepLength * tiltRate
-			double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
-	
-			if (stepHeight > maxStepHeight) {
-				stepHeight = maxStepHeight
-			} else if (stepHeight < minStepHeight) {
-				stepHeight = minStepHeight
-			}
-			
-			try {
-				walkBase(
-					base,
-					fiducialToGlobal,
-					new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
-					stepHeight,
-					10,
-					200
-				)
-			} catch (Exception ex) {
-				BowlerStudio.printStackTrace(ex)
-			}
-		} else {
-			// We are not going to fall over
-			homeLegs(base)
-		}
-	}
-
-	Thread.sleep(1)
-}
-
-
-
-*/
