@@ -440,7 +440,7 @@ class SingleBaseEngine {
                 def profileA = createLimbTipMotionProfile(fiducialToGlobal, nextBaseDelta, groupA, stepHeight)
                 def profileB = createLimbTipMotionProfile(fiducialToGlobal, nextBaseDelta, groupB, stepHeight)
 
-                println("Created motion profiles")
+//                println("Created motion profiles")
 
                 def interpolatedProfileA = computeInterpolatedGroupProfile(
                         groupA,
@@ -457,7 +457,7 @@ class SingleBaseEngine {
                         7
                 )
 
-                println("Computed interpolated profiles")
+//                println("Computed interpolated profiles")
 
                 followInterpolatedGroupProfiles(
                         [groupA, groupB],
@@ -468,7 +468,7 @@ class SingleBaseEngine {
                 percentOfBaseDeltaCompleted += nextBaseDeltaScale
             } catch (UnreachableTransformException ignored) {
                 nextBaseDeltaScale *= 0.75
-                print("New scale: " + nextBaseDeltaScale + "\n")
+//                print("New scale: " + nextBaseDeltaScale + "\n")
 
                 if (nextBaseDeltaScale < 0.1) {
                     throw new IllegalStateException("Scale became too small.")
@@ -510,12 +510,11 @@ class SingleBaseEngine {
             lastTransform = transformNR
             lastSeconds = seconds
             lastCallTime = System.currentTimeMillis()
-
-            println("Set lastCallTime=" + lastCallTime)
+//            println("Set lastCallTime=" + lastCallTime)
 
             // Recreate the thread if it expired
             if (thread == null) {
-                println("Creating new thread")
+//                println("Creating new thread")
                 thread = createThread()
                 thread.start()
             }
@@ -529,20 +528,20 @@ class SingleBaseEngine {
 
     private Thread createThread() {
         return new Thread({
-            println("New thread running")
+//            println("New thread running")
             TransformNR velocity = new TransformNR()
 
-            while (!Thread.interrupted()) {
-                println("Loop")
+            while (!Thread.currentThread().isInterrupted()) {
+//                println("Loop")
                 // Get the latest DriveArc data
                 try {
                     semaphore.acquire()
-                    println("Got semaphore")
+//                    println("Got semaphore")
 
                     // Check the last time DriveArc was called
                     if (System.currentTimeMillis() - lastCallTime > lastSeconds * 1000) {
                         // No more updates. Stop the robot and exit
-                        println("Stopping and exiting")
+//                        println("Stopping and exiting")
                         homeBase(mobileBase)
                         break
                     }
@@ -555,11 +554,11 @@ class SingleBaseEngine {
                     semaphore.release()
                 }
 
-                println("Walking " + velocity)
+//                println("Walking " + velocity)
                 walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, 300)
             }
 
-            println("Exited thread")
+//            println("Exited thread")
             thread = null
         })
     }
