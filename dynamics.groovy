@@ -1,6 +1,9 @@
 import com.neuronrobotics.sdk.addons.kinematics.DHParameterKinematics
 import com.neuronrobotics.sdk.addons.kinematics.MobileBase
+import com.neuronrobotics.sdk.addons.kinematics.math.RotationNR
 import com.neuronrobotics.sdk.addons.kinematics.math.TransformNR
+import eu.mihosoft.vrl.v3d.CSG
+import eu.mihosoft.vrl.v3d.Cube
 import javafx.application.Platform
 
 class PhysicsManagerExample{
