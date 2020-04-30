@@ -483,6 +483,14 @@ void walkBase(
 	}
 }
 
+double minEngineeringUnits(DHParameterKinematics d, int index) {
+	return d.getAbstractLink(index).getMinEngineeringUnits()
+}
+
+double maxEngineeringUnits(DHParameterKinematics d, int index) {
+	return d.getAbstractLink(index).getMaxEngineeringUnits()
+}
+
 double bound(DHParameterKinematics d, int index,double value) {
 	def l1 = d.getAbstractLink(index)
 	if(value>l1.getMaxEngineeringUnits()){
@@ -555,7 +563,151 @@ walkBase(base, fiducialToGlobal, new TransformNR(0, 0, 0, new RotationNR(0, 85, 
 homeLegs(base)*/
 //walkBase(base, fiducialToGlobal, new TransformNR(0, 100, 0, new RotationNR(0, 0, 0)).inverse(), 15, 10, 300)
 
-double kTilt_stepLength = -4
+def determineLegsDuringFall(MobileBase base, double tilt) {
+	if (tilt > 0) {
+		return [
+			base.getAllDHChains().find { it.getScriptingName() == "FrontLeft" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearLeft" },
+			base.getAllDHChains().find { it.getScriptingName() == "FrontRight" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearRight" }
+		]
+	} else {
+		return [
+			base.getAllDHChains().find { it.getScriptingName() == "FrontRight" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearRight" },
+			base.getAllDHChains().find { it.getScriptingName() == "FrontLeft" },
+			base.getAllDHChains().find { it.getScriptingName() == "RearLeft" }
+		]
+	}
+}
+
+void rockAndRoll(DHParameterKinematics otherTopLeg, DHParameterKinematics otherBottomLeg, DHParameterKinematics tail) {
+	otherTopLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(otherTopLeg, 0),
+			maxEngineeringUnits(otherTopLeg, 1),
+			minEngineeringUnits(otherTopLeg, 2)
+		] as double[],
+		0
+	)
+
+	otherBottomLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(otherBottomLeg, 0),
+			maxEngineeringUnits(otherBottomLeg, 1),
+			minEngineeringUnits(otherBottomLeg, 2)
+		] as double[],
+		0
+	)
+
+	Thread.sleep(100)
+
+	otherTopLeg.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(otherTopLeg, 0),
+			maxEngineeringUnits(otherTopLeg, 1),
+			minEngineeringUnits(otherTopLeg, 2)
+		] as double[],
+		0
+	)
+
+	otherBottomLeg.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(otherBottomLeg, 0),
+			maxEngineeringUnits(otherBottomLeg, 1),
+			minEngineeringUnits(otherBottomLeg, 2)
+		] as double[],
+		0
+	)
+}
+
+void recoverFromFall(DHParameterKinematics topLeg, DHParameterKinematics bottomLeg, DHParameterKinematics otherTopLeg, DHParameterKinematics otherBottomLeg, DHParameterKinematics tail) {
+	topLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(topLeg, 0),
+			minEngineeringUnits(topLeg, 1),
+			minEngineeringUnits(topLeg, 2)
+		] as double[],
+		0
+	)
+
+	bottomLeg.setDesiredJointSpaceVector(
+		[
+			minEngineeringUnits(bottomLeg, 0),
+			minEngineeringUnits(bottomLeg, 1),
+			minEngineeringUnits(bottomLeg, 2)
+		] as double[],
+		0
+	)
+
+	otherTopLeg.setDesiredJointSpaceVector(
+		[
+			0,
+			maxEngineeringUnits(otherTopLeg, 1),
+			minEngineeringUnits(otherTopLeg, 2)
+		] as double[],
+		0
+	)
+
+	otherBottomLeg.setDesiredJointSpaceVector(
+		[
+			0,
+			maxEngineeringUnits(otherBottomLeg, 1),
+			minEngineeringUnits(otherBottomLeg, 2)
+		] as double[],
+		0
+	)
+
+	tail.setDesiredJointSpaceVector(
+		[
+			0,
+			0
+		] as double[],
+		0
+	)
+
+	Thread.sleep(500)
+
+	otherTopLeg.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(otherTopLeg, 0),
+			maxEngineeringUnits(otherTopLeg, 1),
+			minEngineeringUnits(otherTopLeg, 2)
+		] as double[],
+		0
+	)
+
+	otherBottomLeg.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(otherBottomLeg, 0),
+			maxEngineeringUnits(otherBottomLeg, 1),
+			minEngineeringUnits(otherBottomLeg, 2)
+		] as double[],
+		0
+	)
+
+	Thread.sleep(200)
+
+	rockAndRoll(otherTopLeg, otherBottomLeg, tail)
+	Thread.sleep(100)
+	rockAndRoll(otherTopLeg, otherBottomLeg, tail)
+	Thread.sleep(100)
+
+	/*tail.setDesiredJointSpaceVector(
+		[
+			maxEngineeringUnits(tail, 0),
+			maxEngineeringUnits(tail, 1)
+		] as double[],
+		0
+	)*/
+}
+
+def legs = determineLegsDuringFall(base, 1)
+recoverFromFall(legs[0], legs[1], legs[2], legs[3], tail)
+
+return
+
+/*double kTilt_stepLength = -4
 double kTilt_stepHeight = 2
 double kTiltRate_stepLength = -0
 
@@ -574,10 +726,6 @@ while (!Thread.currentThread().isInterrupted()) {
 	long now = System.currentTimeMillis()
 	if (now - lastPrintTime > 500) {
 		lastPrintTime = now
-		/*for (double elem : imuDataValues) {
-			print("" + elem + ", ")
-		}
-		print("\n")*/
 		println("tilt="+tilt + "\t\ttiltRate=" + tiltRate)
 	}
 
@@ -641,3 +789,4 @@ while (!Thread.currentThread().isInterrupted()) {
 
 
 
+*/
