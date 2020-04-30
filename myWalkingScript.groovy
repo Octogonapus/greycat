@@ -418,9 +418,11 @@ class SingleBaseEngine {
      * @param base The base.
      * @param baseDelta The delta to apply to the base.
      * @param stepHeight The height of one step.
-     * @param numberOfIncrements The number of slices to interpolate between each step in the generated
-     * profiles.
+     * @param numberOfIncrements The number of slices to interpolate between each step in the
+     * generated profiles.
      * @param timeMs The time to complete the entire walk over.
+     * @param maxNumSteps The maximum number of steps to complete before (possibly) exiting early.
+     * Set to -1 to complete all steps.
      */
     private static void walkBase(
             MobileBase base,
@@ -428,13 +430,15 @@ class SingleBaseEngine {
             TransformNR baseDelta,
             double stepHeight,
             int numberOfIncrements,
-            long timeMs) {
+            long timeMs,
+            int maxNumSteps) {
         def groupA = base.getLegs().subList(0, 2)
         def groupB = base.getLegs().subList(2, 4)
 
         TransformNR nextBaseDelta = baseDelta
         double nextBaseDeltaScale = 1.0
         double percentOfBaseDeltaCompleted = 0.0
+        int numStepsCompleted = 0
 
         while (percentOfBaseDeltaCompleted < 1.0) {
             try {
@@ -466,7 +470,13 @@ class SingleBaseEngine {
                         timeMs
                 )
 
+                numStepsCompleted += 1
                 percentOfBaseDeltaCompleted += nextBaseDeltaScale
+
+                if (numStepsCompleted >= maxNumSteps) {
+                    // Exit early to respect maxNumSteps
+                    break
+                }
             } catch (UnreachableTransformException ignored) {
                 nextBaseDeltaScale *= 0.75
 //                print("New scale: " + nextBaseDeltaScale + "\n")
@@ -497,9 +507,8 @@ class SingleBaseEngine {
 
     def dev = DeviceManager.getSpecificDevice("hidDevice")
     double[] imuDataValues
-    double kTilt_stepLength = -4
-    double kTilt_stepHeight = 2
-    double kTiltRate_stepLength = -0
+    double kTilt_stepLength = -3.5
+    double kTilt_stepHeight = 3
     double maxStepHeight = 35
     double minStepHeight = 10
     boolean fellOver = false
@@ -572,7 +581,6 @@ class SingleBaseEngine {
                 }
 
                 double tilt = imuDataValues[10]
-                double tiltRate = imuDataValues[4]
 
                 if (fellOver) {
                     // We fell over
@@ -587,10 +595,9 @@ class SingleBaseEngine {
                     if (Math.abs(tilt) > 20) {
                         // Actually, we did fall over
                         fellOver = true
-                    } else if (Math.abs(tilt) > 5) { // + tiltRate * 0.1
+                    } else if (Math.abs(tilt) > 5) {
                         // We are going to fall over
                         double stepLength = kTilt_stepLength * tilt
-                        //+ kTiltRate_stepLength * tiltRate
                         double stepHeight = kTilt_stepHeight * Math.abs(tilt) + 10
 
                         if (stepHeight > maxStepHeight) {
@@ -602,10 +609,10 @@ class SingleBaseEngine {
                         TransformNR balanceTransform = new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse()
 
                         // println("Walking " + velocity)
-                        walkBase(mobileBase, fiducialToGlobal, velocity.times(balanceTransform), stepHeight, 10, stepTimeMs)
+                        walkBase(mobileBase, fiducialToGlobal, velocity.times(balanceTransform), stepHeight, 10, stepTimeMs, 1)
                     } else {
                         // We are not going to fall over
-                        walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, stepTimeMs)
+                        walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, stepTimeMs, 1)
                     }
                 }
             }
