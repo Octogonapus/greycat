@@ -545,6 +545,7 @@ class SingleBaseEngine {
     private Thread createThread() {
         return new Thread({
 //            println("New thread running")
+            long stepTimeMs = 300
             TransformNR velocity = new TransformNR()
 
             while (!Thread.currentThread().isInterrupted()) {
@@ -562,8 +563,8 @@ class SingleBaseEngine {
                         break
                     }
 
-                    // Scale the desired velocity to a movement over 300ms
-                    velocity = scaleFT(lastTransform.inverse(), 0.3d / lastSeconds)
+                    // Scale the desired velocity to a movement over the step time
+                    velocity = scaleFT(lastTransform.inverse(), (stepTimeMs / 1000d) / lastSeconds)
                 } catch (InterruptedException ignored) {
                     println("SingleBaseEngine Thread: Failed to acquire semaphore.")
                 } finally {
@@ -598,22 +599,13 @@ class SingleBaseEngine {
                             stepHeight = minStepHeight
                         }
 
-//            walkBase(
-//                    base,
-//                    fiducialToGlobal,
-//                    new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse(),
-//                    stepHeight,
-//                    10,
-//                    200
-//            )
-
                         TransformNR balanceTransform = new TransformNR(0, stepLength, 0, new RotationNR(0, 0, 0)).inverse()
 
                         // println("Walking " + velocity)
-                        walkBase(mobileBase, fiducialToGlobal, velocity.times(balanceTransform), stepHeight, 10, 300)
+                        walkBase(mobileBase, fiducialToGlobal, velocity.times(balanceTransform), stepHeight, 10, stepTimeMs)
                     } else {
                         // We are not going to fall over
-                        walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, 300)
+                        walkBase(mobileBase, fiducialToGlobal, velocity, 15, 10, stepTimeMs)
                     }
                 }
             }
@@ -621,7 +613,7 @@ class SingleBaseEngine {
 //            println("Exited thread")
             thread = null
         })
-    }
+    };
 
     private static scaleFT(TransformNR transformNR, double ratio) {
         double tilt = Math.toDegrees(transformNR.getRotation().getRotationTilt() * ratio)
