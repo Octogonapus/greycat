@@ -17,8 +17,8 @@ The balance algorithm is implemented as a state machine that tracks whether Smal
 - I was unable to get SmallKat to recover from having fallen over (i.e., pick itself back up). It's important to note that I did my experiments with the Luna model, which features long legs and a long tail. I suspect that if the servos were slightly more powerful and the tail was slightly longer, then I would have been able to get SmallKat to recover.
 
 ## Progress Update Videos
-- (Update 1)[https://www.youtube.com/watch?v=ehAgk_eAuPM]
-- (Update 2)[https://www.youtube.com/watch?v=DoGOCxrBovg]
-- (Update 3)[https://www.youtube.com/watch?v=efuPYoOV1Jk]
-- (Update 4 Part 1)[https://www.youtube.com/watch?v=hzrionAnz3c]
-- (Update 4 Part 2)[https://www.youtube.com/watch?v=59mjFYJ0z5w]
+- [Update 1](https://www.youtube.com/watch?v=ehAgk_eAuPM)
+- [Update 2](https://www.youtube.com/watch?v=DoGOCxrBovg)
+- [Update 3](https://www.youtube.com/watch?v=efuPYoOV1Jk)
+- [Update 4 Part 1](https://www.youtube.com/watch?v=hzrionAnz3c)
+- [Update 4 Part 2](https://www.youtube.com/watch?v=59mjFYJ0z5w)
